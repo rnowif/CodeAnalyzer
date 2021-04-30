@@ -1,4 +1,5 @@
 ﻿using System;
+using CodeAnalyzer.Metrics;
 using CodeAnalyzer.Tree;
 
 namespace CodeAnalyzer
@@ -9,8 +10,9 @@ namespace CodeAnalyzer
 
         public static void Main(string[] args)
         {
-            var tree = SourceTree.FromSources(SourcesDir);
-            Console.WriteLine(tree.ToString());
+            var tree = SourceTree.FromDirectory(SourcesDir);
+            Console.WriteLine($"Analysed {tree.Classes.Count} classes.");
+            Console.WriteLine($"Coupling Between Objects (CBO): {tree.ComputeCouplingBetweenObjects()}");
         }
     }
 }
