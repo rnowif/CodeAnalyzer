@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using CodeAnalyzer.Metrics;
 using CodeAnalyzer.Tests.Metrics.TestClasses;
@@ -19,14 +20,21 @@ namespace CodeAnalyzer.Tests.Metrics
         [TestCase(nameof(ClassWithDependencyThroughInheritance), 2)]
         public void TestNumberOfInternalDependencies(string className, int expectedDependencies)
         {
-            var tree = BuildTree(className);
-
-            tree.FindDependencies(tree.Classes.First()).Count().Should().Be(expectedDependencies);
+            FindDependencies(className).Count().Should().Be(expectedDependencies);
         }
 
-        private static SourceTree BuildTree(string className)
+        private static IEnumerable<string> FindDependencies(string className)
         {
-            return SourceTree.FromFile(GetTestFile(className));
+            var tree = SourceAnalyzer.FromFile(GetTestFile(className));
+
+            IEnumerable<string> dependencies = new List<string>();
+
+            tree.VisitClasses(
+                classAnalyzer => dependencies = classAnalyzer.FindDependencies(),
+                classAnalyzer => classAnalyzer.QualifiedName.EndsWith(className)
+            );
+
+            return dependencies;
         }
 
         private static string GetTestFile(string className) =>

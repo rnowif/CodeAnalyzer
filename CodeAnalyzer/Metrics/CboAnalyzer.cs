@@ -11,11 +11,15 @@ namespace CodeAnalyzer.Metrics
     /// </summary>
     public static class CboAnalyzer
     {
-        public static float ComputeCouplingBetweenObjects(this SourceTree tree)
+        public static float ComputeCouplingBetweenObjects(this SourceAnalyzer analyzer)
         {
-            var numberOfDependencies = tree.Classes.Sum(classDeclaration => tree.FindDependencies(classDeclaration).Count());
+            var numberOfDependencies = 0;
+            analyzer.VisitClasses(classAnalyzer =>
+            {
+                numberOfDependencies += classAnalyzer.FindDependencies().Count();
+            });
 
-            return numberOfDependencies / (float) tree.Classes.Count;
+            return numberOfDependencies / (float) analyzer.ClassCount;
         }
     }
 }

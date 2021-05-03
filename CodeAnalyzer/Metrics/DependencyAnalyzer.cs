@@ -10,7 +10,7 @@ namespace CodeAnalyzer.Metrics
 {
     public static class DependencyAnalyzer
     {
-        public static IEnumerable<string> FindDependencies(this SourceTree tree, ClassDeclaration declaration)
+        public static IEnumerable<string> FindDependencies(this ClassAnalyzer classAnalyzer)
         {
             // A "dependency" is any other class that our class is coupled with, i.e.
             // - a class that our class relies on
@@ -19,11 +19,11 @@ namespace CodeAnalyzer.Metrics
             // A class must be counted only once
 
             var dependentTypes = new List<ITypeSymbol>();
-
-            var semanticModel = tree.FindModel(declaration);
+            var classDeclarationSyntax = classAnalyzer.Syntax;
+            var semanticModel = classAnalyzer.SemanticModel;
 
             // Constructors
-            foreach (var methodSyntax in declaration.Syntax.Members.OfType<ConstructorDeclarationSyntax>())
+            foreach (var methodSyntax in classDeclarationSyntax.Members.OfType<ConstructorDeclarationSyntax>())
             {
                 var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax) ?? throw new Exception();
                 dependentTypes.AddRange(methodSymbol.Parameters.SelectMany(p => p.Type.Expand().Where(IsAnalyzed)));
@@ -31,7 +31,7 @@ namespace CodeAnalyzer.Metrics
             }
 
             // Methods
-            foreach (var methodSyntax in declaration.Syntax.Members.OfType<MethodDeclarationSyntax>())
+            foreach (var methodSyntax in classDeclarationSyntax.Members.OfType<MethodDeclarationSyntax>())
             {
                 var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax) ?? throw new Exception();
                 dependentTypes.AddRange(methodSymbol.Parameters.SelectMany(p => p.Type.Expand().Where(IsAnalyzed)));
@@ -39,30 +39,30 @@ namespace CodeAnalyzer.Metrics
             }
 
             // Fields
-            foreach (var variableDeclaratorSyntax in declaration.Syntax.Members.OfType<FieldDeclarationSyntax>().SelectMany(s => s.Declaration.Variables))
+            foreach (var variableDeclaratorSyntax in classDeclarationSyntax.Members.OfType<FieldDeclarationSyntax>().SelectMany(s => s.Declaration.Variables))
             {
                 var symbol = semanticModel.GetDeclaredSymbol(variableDeclaratorSyntax) as IFieldSymbol ?? throw new Exception();
                 dependentTypes.AddRange(symbol.Type.Expand().Where(IsAnalyzed));
             }
 
             // Properties
-            foreach (var propertyDeclarationSyntax in declaration.Syntax.Members.OfType<PropertyDeclarationSyntax>())
+            foreach (var propertyDeclarationSyntax in classDeclarationSyntax.Members.OfType<PropertyDeclarationSyntax>())
             {
                 var symbol = semanticModel.GetDeclaredSymbol(propertyDeclarationSyntax) ?? throw new Exception();
                 dependentTypes.AddRange(symbol.Type.Expand().Where(IsAnalyzed));
             }
 
             // Instantiations
-            foreach (var creationExpressionSyntax in declaration.Syntax.DescendantNodes().OfType<ObjectCreationExpressionSyntax>())
+            foreach (var creationExpressionSyntax in classDeclarationSyntax.DescendantNodes().OfType<ObjectCreationExpressionSyntax>())
             {
                 var symbol = semanticModel.GetTypeInfo(creationExpressionSyntax);
                 dependentTypes.AddRange(symbol.Type.Expand().Where(IsAnalyzed));
             }
 
             // Inheritance
-            if (declaration.Syntax.BaseList != null)
+            if (classDeclarationSyntax.BaseList != null)
             {
-                foreach (var baseType in declaration.Syntax.BaseList.Types)
+                foreach (var baseType in classDeclarationSyntax.BaseList.Types)
                 {
                     var symbol = semanticModel.GetTypeInfo(baseType.Type);
                     dependentTypes.AddRange(symbol.Type.Expand().Where(IsAnalyzed));
