@@ -18,7 +18,7 @@ namespace CodeAnalyzer.Metrics
             // It can be via attributes (composition), associations, local variables, instantiations or injected dependencies (arguments to methods)
             // A class must be counted only once
 
-            var dependentTypes = new HashSet<string>();
+            var dependentTypes = new HashSet<ITypeSymbol>();
 
             var semanticModel = tree.FindModel(declaration);
 
@@ -26,14 +26,14 @@ namespace CodeAnalyzer.Metrics
             foreach (var methodSyntax in declaration.Syntax.Members.OfType<ConstructorDeclarationSyntax>())
             {
                 var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax) ?? throw new Exception();
-                foreach (var type in methodSymbol.Parameters.SelectMany(p => p.Type.Expand().Where(IsNotSystem)))
+                foreach (var type in methodSymbol.Parameters.SelectMany(p => p.Type.Expand().Where(IsAnalyzed)))
                 {
-                    dependentTypes.Add(type.ToString());
+                    dependentTypes.Add(type);
                 }
 
-                foreach (var type in methodSymbol.ReturnType.Expand().Where(IsNotSystem))
+                foreach (var type in methodSymbol.ReturnType.Expand().Where(IsAnalyzed))
                 {
-                    dependentTypes.Add(type.ToString());
+                    dependentTypes.Add(type);
                 }
             }
 
@@ -41,24 +41,26 @@ namespace CodeAnalyzer.Metrics
             foreach (var methodSyntax in declaration.Syntax.Members.OfType<MethodDeclarationSyntax>())
             {
                 var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax) ?? throw new Exception();
-                foreach (var type in methodSymbol.Parameters.SelectMany(p => p.Type.Expand().Where(IsNotSystem)))
+                foreach (var type in methodSymbol.Parameters.SelectMany(p => p.Type.Expand().Where(IsAnalyzed)))
                 {
-                    dependentTypes.Add(type.ToString());
+                    dependentTypes.Add(type);
                 }
 
-                foreach (var type in methodSymbol.ReturnType.Expand().Where(IsNotSystem))
+                foreach (var type in methodSymbol.ReturnType.Expand().Where(IsAnalyzed))
                 {
-                    dependentTypes.Add(type.ToString());
+                    dependentTypes.Add(type);
                 }
             }
 
             // Fields
-            foreach (var variableDeclaratorSyntax in declaration.Syntax.Members.OfType<FieldDeclarationSyntax>().SelectMany(s => s.Declaration.Variables))
+            foreach (var variableDeclaratorSyntax in declaration.Syntax.Members.OfType<FieldDeclarationSyntax>()
+                .SelectMany(s => s.Declaration.Variables))
             {
-                var symbol = semanticModel.GetDeclaredSymbol(variableDeclaratorSyntax) as IFieldSymbol ?? throw new Exception();
-                foreach (var type in symbol.Type.Expand().Where(IsNotSystem))
+                var symbol = semanticModel.GetDeclaredSymbol(variableDeclaratorSyntax) as IFieldSymbol ??
+                             throw new Exception();
+                foreach (var type in symbol.Type.Expand().Where(IsAnalyzed))
                 {
-                    dependentTypes.Add(type.ToString());
+                    dependentTypes.Add(type);
                 }
             }
 
@@ -66,19 +68,20 @@ namespace CodeAnalyzer.Metrics
             foreach (var propertyDeclarationSyntax in declaration.Syntax.Members.OfType<PropertyDeclarationSyntax>())
             {
                 var symbol = semanticModel.GetDeclaredSymbol(propertyDeclarationSyntax) ?? throw new Exception();
-                foreach (var type in symbol.Type.Expand().Where(IsNotSystem))
+                foreach (var type in symbol.Type.Expand().Where(IsAnalyzed))
                 {
-                    dependentTypes.Add(type.ToString());
+                    dependentTypes.Add(type);
                 }
             }
 
             // Instantiations
-            foreach (var creationExpressionSyntax in declaration.Syntax.DescendantNodes().OfType<ObjectCreationExpressionSyntax>())
+            foreach (var creationExpressionSyntax in declaration.Syntax.DescendantNodes()
+                .OfType<ObjectCreationExpressionSyntax>())
             {
                 var symbol = semanticModel.GetTypeInfo(creationExpressionSyntax);
-                foreach (var type in symbol.Type.Expand().Where(IsNotSystem))
+                foreach (var type in symbol.Type.Expand().Where(IsAnalyzed))
                 {
-                    dependentTypes.Add(type.ToString());
+                    dependentTypes.Add(type);
                 }
             }
 
@@ -87,7 +90,7 @@ namespace CodeAnalyzer.Metrics
             // Usages
 
 
-            return dependentTypes;
+            return dependentTypes.Select(t => t.ToString() ?? "");
         }
 
         /// <summary>
@@ -98,8 +101,13 @@ namespace CodeAnalyzer.Metrics
         /// </summary>
         /// <param name="type"></param>
         /// <returns> </returns>
-        private static IEnumerable<ITypeSymbol> Expand(this ITypeSymbol type)
+        private static IEnumerable<ITypeSymbol> Expand(this ITypeSymbol? type)
         {
+            if (type == null)
+            {
+                return new List<ITypeSymbol>();
+            }
+
             IEnumerable<ITypeSymbol> types = new[] {type};
 
             if (type is INamedTypeSymbol {IsGenericType: true} namedTypeSymbol)
@@ -110,9 +118,16 @@ namespace CodeAnalyzer.Metrics
             return types;
         }
 
-        private static bool IsNotSystem(ITypeSymbol type)
+        private static bool IsAnalyzed(ITypeSymbol type)
         {
-            return !type.ContainingNamespace.IsGlobalNamespace && !type.ContainingNamespace.Name.StartsWith("System");
+            var namespaceSymbol = type.ContainingNamespace;
+
+            if (namespaceSymbol == null)
+            {
+                return false;
+            }
+
+            return !namespaceSymbol.IsGlobalNamespace && !namespaceSymbol.Name.StartsWith("System");
         }
     }
 }

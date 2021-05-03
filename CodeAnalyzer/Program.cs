@@ -10,6 +10,7 @@ namespace CodeAnalyzer
 
         public static void Main(string[] args)
         {
+            // See: https://www.researchgate.net/publication/2540411_Thresholds_for_Object-Oriented_Measures for thresholds
             var tree = SourceTree.FromDirectory(SourcesDir);
             Console.WriteLine($"Analysed {tree.Classes.Count} classes.");
             Console.WriteLine($"Coupling Between Objects (CBO): {tree.ComputeCouplingBetweenObjects()}");
