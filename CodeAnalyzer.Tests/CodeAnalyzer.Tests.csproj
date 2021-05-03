@@ -23,6 +23,7 @@
         <EmbeddedResource Include="Metrics\TestClasses\AClassWithAnInternalDependency.cs" CopyToOutputDirectory="Always" />
         <EmbeddedResource Include="Metrics\TestClasses\AClassWithAnInternalGenericDependency.cs" CopyToOutputDirectory="Always" />
         <EmbeddedResource Include="Metrics\TestClasses\AClassWithSeveralInternalDependencies.cs" CopyToOutputDirectory="Always" />
+        <EmbeddedResource Include="Metrics\TestClasses\ClassWithDependencyThroughInheritance.cs" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
 </Project>

@@ -18,7 +18,7 @@ namespace CodeAnalyzer.Metrics
             // It can be via attributes (composition), associations, local variables, instantiations or injected dependencies (arguments to methods)
             // A class must be counted only once
 
-            var dependentTypes = new HashSet<ITypeSymbol>();
+            var dependentTypes = new List<ITypeSymbol>();
 
             var semanticModel = tree.FindModel(declaration);
 
@@ -26,71 +26,53 @@ namespace CodeAnalyzer.Metrics
             foreach (var methodSyntax in declaration.Syntax.Members.OfType<ConstructorDeclarationSyntax>())
             {
                 var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax) ?? throw new Exception();
-                foreach (var type in methodSymbol.Parameters.SelectMany(p => p.Type.Expand().Where(IsAnalyzed)))
-                {
-                    dependentTypes.Add(type);
-                }
-
-                foreach (var type in methodSymbol.ReturnType.Expand().Where(IsAnalyzed))
-                {
-                    dependentTypes.Add(type);
-                }
+                dependentTypes.AddRange(methodSymbol.Parameters.SelectMany(p => p.Type.Expand().Where(IsAnalyzed)));
+                dependentTypes.AddRange(methodSymbol.ReturnType.Expand().Where(IsAnalyzed));
             }
 
             // Methods
             foreach (var methodSyntax in declaration.Syntax.Members.OfType<MethodDeclarationSyntax>())
             {
                 var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax) ?? throw new Exception();
-                foreach (var type in methodSymbol.Parameters.SelectMany(p => p.Type.Expand().Where(IsAnalyzed)))
-                {
-                    dependentTypes.Add(type);
-                }
-
-                foreach (var type in methodSymbol.ReturnType.Expand().Where(IsAnalyzed))
-                {
-                    dependentTypes.Add(type);
-                }
+                dependentTypes.AddRange(methodSymbol.Parameters.SelectMany(p => p.Type.Expand().Where(IsAnalyzed)));
+                dependentTypes.AddRange(methodSymbol.ReturnType.Expand().Where(IsAnalyzed));
             }
 
             // Fields
-            foreach (var variableDeclaratorSyntax in declaration.Syntax.Members.OfType<FieldDeclarationSyntax>()
-                .SelectMany(s => s.Declaration.Variables))
+            foreach (var variableDeclaratorSyntax in declaration.Syntax.Members.OfType<FieldDeclarationSyntax>().SelectMany(s => s.Declaration.Variables))
             {
-                var symbol = semanticModel.GetDeclaredSymbol(variableDeclaratorSyntax) as IFieldSymbol ??
-                             throw new Exception();
-                foreach (var type in symbol.Type.Expand().Where(IsAnalyzed))
-                {
-                    dependentTypes.Add(type);
-                }
+                var symbol = semanticModel.GetDeclaredSymbol(variableDeclaratorSyntax) as IFieldSymbol ?? throw new Exception();
+                dependentTypes.AddRange(symbol.Type.Expand().Where(IsAnalyzed));
             }
 
             // Properties
             foreach (var propertyDeclarationSyntax in declaration.Syntax.Members.OfType<PropertyDeclarationSyntax>())
             {
                 var symbol = semanticModel.GetDeclaredSymbol(propertyDeclarationSyntax) ?? throw new Exception();
-                foreach (var type in symbol.Type.Expand().Where(IsAnalyzed))
-                {
-                    dependentTypes.Add(type);
-                }
+                dependentTypes.AddRange(symbol.Type.Expand().Where(IsAnalyzed));
             }
 
             // Instantiations
-            foreach (var creationExpressionSyntax in declaration.Syntax.DescendantNodes()
-                .OfType<ObjectCreationExpressionSyntax>())
+            foreach (var creationExpressionSyntax in declaration.Syntax.DescendantNodes().OfType<ObjectCreationExpressionSyntax>())
             {
                 var symbol = semanticModel.GetTypeInfo(creationExpressionSyntax);
-                foreach (var type in symbol.Type.Expand().Where(IsAnalyzed))
-                {
-                    dependentTypes.Add(type);
-                }
+                dependentTypes.AddRange(symbol.Type.Expand().Where(IsAnalyzed));
             }
 
             // Inheritance
+            if (declaration.Syntax.BaseList != null)
+            {
+                foreach (var baseType in declaration.Syntax.BaseList.Types)
+                {
+                    var symbol = semanticModel.GetTypeInfo(baseType.Type);
+                    dependentTypes.AddRange(symbol.Type.Expand().Where(IsAnalyzed));
+                }
+            }
 
             // Usages
 
 
-            return dependentTypes.Select(t => t.ToString() ?? "");
+            return dependentTypes.ToHashSet().Select(t => t.ToString() ?? "");
         }
 
         /// <summary>

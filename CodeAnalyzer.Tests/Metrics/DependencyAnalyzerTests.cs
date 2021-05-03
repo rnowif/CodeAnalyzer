@@ -16,6 +16,7 @@ namespace CodeAnalyzer.Tests.Metrics
         [TestCase(nameof(AClassWithAnInternalDependency), 1)]
         [TestCase(nameof(AClassWithAnInternalGenericDependency), 1)]
         [TestCase(nameof(AClassWithSeveralInternalDependencies), 7)]
+        [TestCase(nameof(ClassWithDependencyThroughInheritance), 2)]
         public void TestNumberOfInternalDependencies(string className, int expectedDependencies)
         {
             var tree = BuildTree(className);
