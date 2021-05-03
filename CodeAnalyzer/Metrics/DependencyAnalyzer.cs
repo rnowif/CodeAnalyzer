@@ -17,39 +17,102 @@ namespace CodeAnalyzer.Metrics
             // - a class that relies on our class
             // It can be via attributes (composition), associations, local variables, instantiations or injected dependencies (arguments to methods)
             // A class must be counted only once
-            // We can exclude classes from Microsoft and System namespaces
-            // PropertyDeclarationSyntax, ConstructorDeclarationSyntax, MethodDeclarationSyntax
 
             var dependentTypes = new HashSet<string>();
 
             var semanticModel = tree.FindModel(declaration);
 
-            foreach (var syntax in declaration.Syntax.Members.OfType<ConstructorDeclarationSyntax>())
+            // Constructors
+            foreach (var methodSyntax in declaration.Syntax.Members.OfType<ConstructorDeclarationSyntax>())
             {
-                var symbol = semanticModel.GetDeclaredSymbol(syntax) ?? throw new Exception();
-                foreach (var parameter in symbol.Parameters.Where(IsNotSystem))
+                var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax) ?? throw new Exception();
+                foreach (var type in methodSymbol.Parameters.SelectMany(p => p.Type.Expand().Where(IsNotSystem)))
                 {
-                    dependentTypes.Add(parameter.Type.ToString());
+                    dependentTypes.Add(type.ToString());
+                }
+
+                foreach (var type in methodSymbol.ReturnType.Expand().Where(IsNotSystem))
+                {
+                    dependentTypes.Add(type.ToString());
                 }
             }
 
-            foreach (var syntax in declaration.Syntax.Members.OfType<MethodDeclarationSyntax>())
+            // Methods
+            foreach (var methodSyntax in declaration.Syntax.Members.OfType<MethodDeclarationSyntax>())
             {
-                var symbol = semanticModel.GetDeclaredSymbol(syntax) ?? throw new Exception();
-                foreach (var parameter in symbol.Parameters.Where(IsNotSystem))
+                var methodSymbol = semanticModel.GetDeclaredSymbol(methodSyntax) ?? throw new Exception();
+                foreach (var type in methodSymbol.Parameters.SelectMany(p => p.Type.Expand().Where(IsNotSystem)))
                 {
-                    dependentTypes.Add(parameter.Type.ToString());
+                    dependentTypes.Add(type.ToString());
+                }
+
+                foreach (var type in methodSymbol.ReturnType.Expand().Where(IsNotSystem))
+                {
+                    dependentTypes.Add(type.ToString());
                 }
             }
+
+            // Fields
+            foreach (var variableDeclaratorSyntax in declaration.Syntax.Members.OfType<FieldDeclarationSyntax>().SelectMany(s => s.Declaration.Variables))
+            {
+                var symbol = semanticModel.GetDeclaredSymbol(variableDeclaratorSyntax) as IFieldSymbol ?? throw new Exception();
+                foreach (var type in symbol.Type.Expand().Where(IsNotSystem))
+                {
+                    dependentTypes.Add(type.ToString());
+                }
+            }
+
+            // Properties
+            foreach (var propertyDeclarationSyntax in declaration.Syntax.Members.OfType<PropertyDeclarationSyntax>())
+            {
+                var symbol = semanticModel.GetDeclaredSymbol(propertyDeclarationSyntax) ?? throw new Exception();
+                foreach (var type in symbol.Type.Expand().Where(IsNotSystem))
+                {
+                    dependentTypes.Add(type.ToString());
+                }
+            }
+
+            // Instantiations
+            foreach (var creationExpressionSyntax in declaration.Syntax.DescendantNodes().OfType<ObjectCreationExpressionSyntax>())
+            {
+                var symbol = semanticModel.GetTypeInfo(creationExpressionSyntax);
+                foreach (var type in symbol.Type.Expand().Where(IsNotSystem))
+                {
+                    dependentTypes.Add(type.ToString());
+                }
+            }
+
+            // Inheritance
+
+            // Usages
+
 
             return dependentTypes;
         }
 
-
-        // TODO: Count generic types as dependencies also
-        private static bool IsNotSystem(IParameterSymbol p)
+        /// <summary>
+        /// Return the type and - if it's a generic - all the other associated types <br/>
+        /// - <code>string</code> will return <code>[string]</code> <br/>
+        /// - <code>IEnumerable&lt;string&gt;</code> will return <code>[IEnumerable, string]</code> <br/>
+        /// - <code>IEnumerable&lt;Func&lt;A,B&gt;&gt;</code> will return <code>[IEnumerable, Func, A, B]</code> <br/>
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns> </returns>
+        private static IEnumerable<ITypeSymbol> Expand(this ITypeSymbol type)
         {
-            return !p.Type.ContainingNamespace.IsGlobalNamespace && !p.Type.ContainingNamespace.Name.StartsWith("System");
+            IEnumerable<ITypeSymbol> types = new[] {type};
+
+            if (type is INamedTypeSymbol {IsGenericType: true} namedTypeSymbol)
+            {
+                types = types.Concat(namedTypeSymbol.TypeArguments.SelectMany(Expand));
+            }
+
+            return types;
+        }
+
+        private static bool IsNotSystem(ITypeSymbol type)
+        {
+            return !type.ContainingNamespace.IsGlobalNamespace && !type.ContainingNamespace.Name.StartsWith("System");
         }
     }
 }
