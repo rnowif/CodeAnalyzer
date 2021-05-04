@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using CodeAnalyzer.Tree;
 
 namespace CodeAnalyzer.Metrics
 {
@@ -11,15 +10,12 @@ namespace CodeAnalyzer.Metrics
     /// </summary>
     public static class CboAnalyzer
     {
-        public static float ComputeCouplingBetweenObjects(this SourceAnalyzer analyzer)
+        public static float ComputeCouplingBetweenObjects(this DependencyGraph dependencyGraph)
         {
-            var numberOfDependencies = 0;
-            analyzer.VisitClasses(classAnalyzer =>
-            {
-                numberOfDependencies += classAnalyzer.FindDependencies().Count();
-            });
+            var numberOfDependencies = dependencyGraph.Classes
+                .Sum(@class => dependencyGraph.FindDependencies(@class.QualifiedName).Count() + dependencyGraph.FindReferences(@class.QualifiedName).Count());
 
-            return numberOfDependencies / (float) analyzer.ClassCount;
+            return numberOfDependencies / (float) dependencyGraph.Count;
         }
     }
 }

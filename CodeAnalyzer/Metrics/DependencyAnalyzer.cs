@@ -69,9 +69,6 @@ namespace CodeAnalyzer.Metrics
                 }
             }
 
-            // Usages
-
-
             return dependentTypes.ToHashSet().Select(t => t.ToString() ?? "");
         }
 

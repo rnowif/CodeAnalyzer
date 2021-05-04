@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using CodeAnalyzer.Metrics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -10,38 +10,28 @@ namespace CodeAnalyzer.Tree
 {
     public class SourceAnalyzer
     {
-        private readonly IList<ClassAnalyzer> _classes;
+        public DependencyGraph DependencyGraph { get; }
 
-        public int ClassCount => _classes.Count;
-
-        private SourceAnalyzer(Compilation compilation, IEnumerable<SyntaxTree> syntaxTrees)
+        private SourceAnalyzer(IEnumerable<Compilation> compilations)
         {
-            _classes = new List<ClassAnalyzer>();
+            var classes = new List<ClassAnalyzer>();
 
-            foreach (var syntaxTree in syntaxTrees)
+            foreach (var compilation in compilations)
             {
-                var root = syntaxTree.GetCompilationUnitRoot();
-
-                foreach (var namespaceSyntax in root.Members.OfType<NamespaceDeclarationSyntax>())
+                foreach (var syntaxTree in compilation.SyntaxTrees)
                 {
-                    var namespaceName = namespaceSyntax.Name.ToString();
-                    foreach (var classSyntax in namespaceSyntax.Members.OfType<ClassDeclarationSyntax>())
+                    var root = syntaxTree.GetCompilationUnitRoot();
+
+                    foreach (var namespaceSyntax in root.Members.OfType<NamespaceDeclarationSyntax>())
                     {
-                        var semanticModel = compilation.GetSemanticModel(classSyntax.SyntaxTree);
-                        var cSharpClass = new ClassAnalyzer(classSyntax, namespaceName, semanticModel);
-                        _classes.Add(cSharpClass);
+                        var namespaceName = namespaceSyntax.Name.ToString();
+                        classes.AddRange(namespaceSyntax.Members.OfType<ClassDeclarationSyntax>()
+                            .Select(classSyntax => new ClassAnalyzer(classSyntax, namespaceName, compilation.GetSemanticModel(classSyntax.SyntaxTree))));
                     }
                 }
             }
-        }
 
-        public void VisitClasses(Action<ClassAnalyzer> visitor, Predicate<ClassAnalyzer>? filter = null)
-        {
-            var actualFilter = filter ?? (_ => true);
-            foreach (var @class in _classes.Where(@class => actualFilter(@class)))
-            {
-                visitor(@class);
-            }
+            DependencyGraph = DependencyGraph.FromClasses(classes);
         }
 
         public static SourceAnalyzer FromDirectory(string directory)
@@ -62,8 +52,7 @@ namespace CodeAnalyzer.Tree
                 .Select(content => CSharpSyntaxTree.ParseText(content))
                 .ToList();
 
-            var compilation = CSharpCompilation.Create(null, syntaxTrees);
-            return new SourceAnalyzer(compilation, syntaxTrees);
+            return new SourceAnalyzer(new[] {CSharpCompilation.Create(null, syntaxTrees)});
         }
     }
 }
