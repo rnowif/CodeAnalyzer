@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
+using CodeAnalyzer.Metrics;
 using CodeAnalyzer.Tests.Metrics.TestClasses;
 using CodeAnalyzer.Tree;
 using FluentAssertions;
@@ -12,20 +10,58 @@ namespace CodeAnalyzer.Tests.Metrics
     [TestFixture]
     public class DependencyAnalyzerTests
     {
-        [TestCase(typeof(EmptyClass), 0)]
-        [TestCase(typeof(ClassWithOnlySystemDependencies), 0)]
-        [TestCase(typeof(AClassWithAnInternalDependency), 1)]
-        [TestCase(typeof(AClassWithAnInternalGenericDependency), 1)]
-        [TestCase(typeof(AClassWithSeveralInternalDependencies), 7)]
-        [TestCase(typeof(ClassWithDependencyThroughInheritance), 2)]
-        public void TestNumberOfInternalDependencies(Type classType, int expectedDependencies)
+
+        [Test]
+        public void Empty_Class_Have_No_Dependency()
         {
-            FindDependencies(classType).Count().Should().Be(expectedDependencies);
+            var graph = BuildDependencyGraph(nameof(EmptyClass));
+
+            graph.FindDependencies(typeof(EmptyClass).FullName!).Should().BeEmpty();
         }
 
-        private static IEnumerable<string> FindDependencies(Type classType) =>
-            SourceAnalyzer.FromFile(GetTestFile(classType.Name))
-                .DependencyGraph.FindDependencies(classType.FullName!);
+        [Test]
+        public void System_Dependencies_Do_Not_Count_Towards_Dependencies()
+        {
+            var graph = BuildDependencyGraph(nameof(ClassWithOnlySystemDependencies));
+
+            graph.FindDependencies(typeof(EmptyClass).FullName!).Should().BeEmpty();
+        }
+
+        [Test]
+        public void Dependencies_Can_Be_Generic_In_Constructor_Methods_Fields_Or_Body()
+        {
+            var graph = BuildDependencyGraph(nameof(AClassWithSeveralInternalDependencies));
+
+            graph.FindDependencies(typeof(AClassWithSeveralInternalDependencies).FullName!)
+                .Should()
+                .BeEquivalentTo(
+                    typeof(A).FullName,
+                    typeof(B).FullName,
+                    typeof(C).FullName,
+                    typeof(D).FullName,
+                    typeof(E).FullName,
+                    typeof(F).FullName,
+                    typeof(G).FullName
+                );
+
+            graph.FindReferences(typeof(A).FullName!)
+                .Should().BeEquivalentTo(typeof(AClassWithSeveralInternalDependencies).FullName);
+        }
+
+        [Test]
+        public void Inheritance_And_Implementation_Count_As_Dependencies()
+        {
+            var graph = BuildDependencyGraph(nameof(ClassWithDependencyThroughInheritance));
+
+            graph.FindDependencies(typeof(ClassWithDependencyThroughInheritance).FullName!)
+                .Should()
+                .BeEquivalentTo(typeof(SuperClass).FullName, typeof(ISuperInterface).FullName);
+
+            graph.FindReferences(typeof(SuperClass).FullName!)
+                .Should().BeEquivalentTo(typeof(ClassWithDependencyThroughInheritance).FullName);
+        }
+
+        private static DependencyGraph BuildDependencyGraph(string className) => SourceAnalyzer.FromFile(GetTestFile(className)).DependencyGraph;
 
         private static string GetTestFile(string className) =>
             Path.Combine(TestContext.CurrentContext.TestDirectory, "Metrics", "TestClasses", $"{className}.cs");

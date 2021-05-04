@@ -12,8 +12,8 @@ namespace CodeAnalyzer.Metrics
     {
         public static float ComputeCouplingBetweenObjects(this DependencyGraph dependencyGraph)
         {
-            var numberOfDependencies = dependencyGraph.Classes
-                .Sum(@class => dependencyGraph.FindDependencies(@class.QualifiedName).Count() + dependencyGraph.FindReferences(@class.QualifiedName).Count());
+            var numberOfDependencies = dependencyGraph.Nodes
+                .Sum(node => node.Dependencies.Count() + node.References.Count());
 
             return numberOfDependencies / (float) dependencyGraph.Count;
         }
