@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using CodeAnalyzer.Metrics;
 using CodeAnalyzer.Tree;
 
@@ -14,6 +15,20 @@ namespace CodeAnalyzer
             var analyzer = SourceAnalyzer.FromDirectory(SourcesDir);
             Console.WriteLine($"Analysed {analyzer.DependencyGraph.Count} classes.");
             Console.WriteLine($"Coupling Between Objects (CBO): {analyzer.DependencyGraph.ComputeCouplingBetweenObjects()}");
+
+            var worstOffender = analyzer.DependencyGraph.Nodes
+                .Aggregate((curMax, x) => x.Dependencies.Count() > curMax.Dependencies.Count() ? x : curMax);
+            Console.WriteLine($"Worst Offender: {worstOffender.Identifier} has {worstOffender.Dependencies.Count()} dependencies");
+
+            var worstOffenderExcludingPortals = analyzer.DependencyGraph.Nodes
+                .Where(n => !n.Identifier.EndsWith("Portal"))
+                .Aggregate((curMax, x) => x.Dependencies.Count() > curMax.Dependencies.Count() ? x : curMax);
+            Console.WriteLine($"Worst Offender (excluding portals): {worstOffenderExcludingPortals.Identifier} has {worstOffenderExcludingPortals.Dependencies.Count()} dependencies");
+
+            foreach (var dependency in worstOffenderExcludingPortals.Dependencies.OrderBy(x => x))
+            {
+                Console.WriteLine($"\t- {dependency}");
+            }
         }
     }
 }
