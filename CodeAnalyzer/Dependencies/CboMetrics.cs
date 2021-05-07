@@ -8,7 +8,7 @@ namespace CodeAnalyzer.Dependencies
     /// Could do the same for indirect dependencies
     /// There is a relationship between the CBO and the number of defects in a codebase.
     /// </summary>
-    public static class CboAnalyzer
+    public static class CboMetrics
     {
         public static float ComputeCouplingBetweenObjects(this DependencyGraph dependencyGraph)
         {

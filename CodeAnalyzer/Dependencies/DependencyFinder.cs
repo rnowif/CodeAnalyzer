@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using CodeAnalyzer.Tree;
+using CodeAnalyzer.Analyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CodeAnalyzer.Dependencies
 {
-    public static class DependencyAnalyzer
+    public static class DependencyFinder
     {
         public static IEnumerable<string> FindDependencies(this ClassAnalyzer classAnalyzer)
         {

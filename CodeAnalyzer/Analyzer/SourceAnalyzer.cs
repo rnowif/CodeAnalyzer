@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace CodeAnalyzer.Tree
+namespace CodeAnalyzer.Analyzer
 {
     public class SourceAnalyzer
     {

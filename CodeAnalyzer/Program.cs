@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
+using CodeAnalyzer.Analyzer;
 using CodeAnalyzer.Dependencies;
-using CodeAnalyzer.Tree;
 
 namespace CodeAnalyzer
 {

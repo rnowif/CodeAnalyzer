@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using CodeAnalyzer.Tree;
+using CodeAnalyzer.Analyzer;
 
 namespace CodeAnalyzer.Dependencies
 {

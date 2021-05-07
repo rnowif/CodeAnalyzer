@@ -1,7 +1,7 @@
 ﻿using System.IO;
+using CodeAnalyzer.Analyzer;
 using CodeAnalyzer.Dependencies;
 using CodeAnalyzer.Tests.Dependencies.TestClasses;
-using CodeAnalyzer.Tree;
 using FluentAssertions;
 using NUnit.Framework;
 
