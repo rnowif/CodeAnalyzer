@@ -1,6 +1,7 @@
 ﻿using System.Linq;
+using CodeAnalyzer.Dependencies;
 
-namespace CodeAnalyzer.Dependencies
+namespace CodeAnalyzer.Metrics
 {
     /// <summary>
     /// Coupling between objects (CBO) = sum(dependencies) / count(classes)
@@ -8,7 +9,7 @@ namespace CodeAnalyzer.Dependencies
     /// Could do the same for indirect dependencies
     /// There is a relationship between the CBO and the number of defects in a codebase.
     /// </summary>
-    public static class CboMetrics
+    public static class Cbo
     {
         public static float ComputeCouplingBetweenObjects(this DependencyGraph dependencyGraph)
         {

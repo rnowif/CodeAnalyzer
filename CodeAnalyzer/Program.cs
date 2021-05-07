@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using CodeAnalyzer.Analyzer;
-using CodeAnalyzer.Dependencies;
+using CodeAnalyzer.Metrics;
 
 namespace CodeAnalyzer
 {
@@ -24,11 +24,6 @@ namespace CodeAnalyzer
                 .Where(n => !n.Identifier.EndsWith("Portal"))
                 .Aggregate((curMax, x) => x.Dependencies.Count() > curMax.Dependencies.Count() ? x : curMax);
             Console.WriteLine($"Worst Offender (excluding portals): {worstOffenderExcludingPortals.Identifier} has {worstOffenderExcludingPortals.Dependencies.Count()} dependencies");
-
-            foreach (var dependency in worstOffenderExcludingPortals.Dependencies.OrderBy(x => x))
-            {
-                Console.WriteLine($"\t- {dependency}");
-            }
         }
     }
 }
