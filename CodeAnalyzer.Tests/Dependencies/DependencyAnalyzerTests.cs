@@ -1,11 +1,11 @@
 ﻿using System.IO;
-using CodeAnalyzer.Metrics;
-using CodeAnalyzer.Tests.Metrics.TestClasses;
+using CodeAnalyzer.Dependencies;
+using CodeAnalyzer.Tests.Dependencies.TestClasses;
 using CodeAnalyzer.Tree;
 using FluentAssertions;
 using NUnit.Framework;
 
-namespace CodeAnalyzer.Tests.Metrics
+namespace CodeAnalyzer.Tests.Dependencies
 {
     [TestFixture]
     public class DependencyAnalyzerTests
@@ -64,6 +64,6 @@ namespace CodeAnalyzer.Tests.Metrics
         private static DependencyGraph BuildDependencyGraph(string className) => SourceAnalyzer.FromFile(GetTestFile(className)).DependencyGraph;
 
         private static string GetTestFile(string className) =>
-            Path.Combine(TestContext.CurrentContext.TestDirectory, "Metrics", "TestClasses", $"{className}.cs");
+            Path.Combine(TestContext.CurrentContext.TestDirectory, "Dependencies", "TestClasses", $"{className}.cs");
     }
 }

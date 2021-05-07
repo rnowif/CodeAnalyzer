@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CodeAnalyzer.Tests.Metrics.TestClasses
+namespace CodeAnalyzer.Tests.Dependencies.TestClasses
 {
     public class ClassWithOnlySystemDependencies
     {

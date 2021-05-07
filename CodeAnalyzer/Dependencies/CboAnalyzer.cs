@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace CodeAnalyzer.Metrics
+namespace CodeAnalyzer.Dependencies
 {
     /// <summary>
     /// Coupling between objects (CBO) = sum(dependencies) / count(classes)

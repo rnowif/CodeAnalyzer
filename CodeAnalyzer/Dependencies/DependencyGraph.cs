@@ -2,7 +2,7 @@
 using System.Linq;
 using CodeAnalyzer.Tree;
 
-namespace CodeAnalyzer.Metrics
+namespace CodeAnalyzer.Dependencies
 {
     public class DependencyGraph
     {

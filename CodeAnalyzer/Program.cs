@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using CodeAnalyzer.Metrics;
+using CodeAnalyzer.Dependencies;
 using CodeAnalyzer.Tree;
 
 namespace CodeAnalyzer

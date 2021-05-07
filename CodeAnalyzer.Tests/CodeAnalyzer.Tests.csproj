@@ -18,10 +18,10 @@
     </ItemGroup>
     
     <ItemGroup>
-        <EmbeddedResource Include="Metrics\TestClasses\EmptyClass.cs" CopyToOutputDirectory="Always" />
-        <EmbeddedResource Include="Metrics\TestClasses\ClassWithOnlySystemDependencies.cs" CopyToOutputDirectory="Always" />
-        <EmbeddedResource Include="Metrics\TestClasses\AClassWithSeveralInternalDependencies.cs" CopyToOutputDirectory="Always" />
-        <EmbeddedResource Include="Metrics\TestClasses\ClassWithDependencyThroughInheritance.cs" CopyToOutputDirectory="Always" />
+        <EmbeddedResource Include="Dependencies\TestClasses\EmptyClass.cs" CopyToOutputDirectory="Always" />
+        <EmbeddedResource Include="Dependencies\TestClasses\ClassWithOnlySystemDependencies.cs" CopyToOutputDirectory="Always" />
+        <EmbeddedResource Include="Dependencies\TestClasses\AClassWithSeveralInternalDependencies.cs" CopyToOutputDirectory="Always" />
+        <EmbeddedResource Include="Dependencies\TestClasses\ClassWithDependencyThroughInheritance.cs" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
 </Project>
