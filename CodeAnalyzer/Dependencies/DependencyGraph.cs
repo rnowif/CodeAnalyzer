@@ -57,7 +57,7 @@ namespace CodeAnalyzer.Dependencies
                     references = new List<string>();
                 }
 
-                nodesByClassName[@class.QualifiedName] = new DependencyNode(@class.QualifiedName, dependencies.ToHashSet(), references.ToHashSet());
+                nodesByClassName[@class.QualifiedName] = new DependencyNode(@class, dependencies.ToHashSet(), references.ToHashSet());
             }
 
             return new DependencyGraph(nodesByClassName);
@@ -66,15 +66,16 @@ namespace CodeAnalyzer.Dependencies
 
     public class DependencyNode
     {
-        public string Identifier { get; }
+        public string Identifier => Class.QualifiedName;
         public IEnumerable<string> Dependencies { get; }
         public IEnumerable<string> References { get; }
+        public ClassAnalyzer Class { get; }
 
-        public DependencyNode(string className, IEnumerable<string> dependencies, IEnumerable<string> references)
+        public DependencyNode(ClassAnalyzer @class, IEnumerable<string> dependencies, IEnumerable<string> references)
         {
-            Identifier = className;
             Dependencies = dependencies;
             References = references;
+            Class = @class;
         }
     }
 }

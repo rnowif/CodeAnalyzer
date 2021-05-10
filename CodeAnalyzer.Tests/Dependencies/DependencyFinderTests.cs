@@ -8,7 +8,7 @@ using NUnit.Framework;
 namespace CodeAnalyzer.Tests.Dependencies
 {
     [TestFixture]
-    public class DependencyAnalyzerTests
+    public class DependencyFinderTests
     {
 
         [Test]

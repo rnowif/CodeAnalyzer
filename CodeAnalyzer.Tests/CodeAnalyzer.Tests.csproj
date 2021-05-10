@@ -22,6 +22,10 @@
         <EmbeddedResource Include="Dependencies\TestClasses\ClassWithOnlySystemDependencies.cs" CopyToOutputDirectory="Always" />
         <EmbeddedResource Include="Dependencies\TestClasses\AClassWithSeveralInternalDependencies.cs" CopyToOutputDirectory="Always" />
         <EmbeddedResource Include="Dependencies\TestClasses\ClassWithDependencyThroughInheritance.cs" CopyToOutputDirectory="Always" />
+        <EmbeddedResource Include="Methods\TestClasses\ClassWithNoPublicMethod.cs" CopyToOutputDirectory="Always" />
+        <EmbeddedResource Include="Methods\TestClasses\ClassWithOnePublicMethod.cs" CopyToOutputDirectory="Always" />
+        <EmbeddedResource Include="Methods\TestClasses\ClassWithTwoMethodsAccessingTheSameField.cs" CopyToOutputDirectory="Always" />
+        <EmbeddedResource Include="Methods\TestClasses\ClassWithTwoMethodsAccessingTheSameProperty.cs" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
 </Project>
