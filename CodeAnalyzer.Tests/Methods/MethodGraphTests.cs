@@ -48,6 +48,15 @@ namespace CodeAnalyzer.Tests.Methods
             graph.CountDirectConnections.Should().Be(1);
         }
 
+        [Test]
+        public void Class_With_Two_Methods_Accessing_Two_Fields_And_One_Method_Accessing_Both_Fields_Has_Two_Direct_Connections()
+        {
+            var graph = BuildMethodGraph(nameof(ClassWithTwoMethodsAccessingTwoFieldsAndOneMethodAccessingBothFields));
+
+            graph.CountVisible.Should().Be(3);
+            graph.CountDirectConnections.Should().Be(2);
+        }
+
         private static MethodGraph BuildMethodGraph(string className) =>
             SourceAnalyzer.FromFile(GetTestFile(className))
                 .DependencyGraph.Nodes.First(n => n.Identifier.EndsWith(className))

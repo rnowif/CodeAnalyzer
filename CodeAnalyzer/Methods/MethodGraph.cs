@@ -14,18 +14,15 @@ namespace CodeAnalyzer.Methods
         public int CountVisible => _methods.Count;
         public int CountDirectConnections => _connections.Count(c => c.Type == MethodConnection.ConnectionType.Direct);
 
-        private MethodGraph(IReadOnlyCollection<MethodConnection> connections, IReadOnlyCollection<MethodDeclarationSyntax> methods)
+        private MethodGraph(IEnumerable<MethodConnection> connections, IReadOnlyCollection<MethodDeclarationSyntax> methods)
         {
-            _connections = connections;
+            _connections = connections.ToList();
             _methods = methods;
         }
 
         public static MethodGraph FromClass(ClassAnalyzer @class)
         {
             // Consider all public methods (excluding constructors) and fields/properties
-            // Methods A and B are directly connected if:
-            // - They both access the same field/property, or
-            // - The call trees starting at A and B access the same field/property.
 
             var connections = new List<MethodConnection>();
             var visibleMethods = new List<MethodDeclarationSyntax>();
@@ -54,19 +51,21 @@ namespace CodeAnalyzer.Methods
             }
 
             // Marking all methods that share a variable as directly connected
+            // Methods A and B are directly connected if:
+            // - They both access the same field/property, or
+            // - The call trees starting at A and B access the same field/property.
 
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator - Clearer this way
             foreach (var (_, methods) in variablesAccessedByMethods)
             {
                 var directConnections = methods
                     .SelectMany(x => methods, (x, y) => new MethodConnection(MethodConnection.ConnectionType.Direct, x, y))
-                    .Where(connection => !connection.IsSelfConnected)
-                    .Distinct(new MethodConnectionComparer());
+                    .Where(connection => !connection.IsSelfConnected);
 
                 connections.AddRange(directConnections);
             }
 
-            return new MethodGraph(connections, visibleMethods);
+            return new MethodGraph(connections.Distinct(new MethodConnectionComparer()), visibleMethods);
         }
 
         private static IEnumerable<ISymbol> GetClassLevelVariables(ClassAnalyzer @class)
