@@ -27,6 +27,7 @@
         <EmbeddedResource Include="Methods\TestClasses\ClassWithTwoMethodsAccessingTheSameField.cs" CopyToOutputDirectory="Always" />
         <EmbeddedResource Include="Methods\TestClasses\ClassWithTwoMethodsAccessingTheSameProperty.cs" CopyToOutputDirectory="Always" />
         <EmbeddedResource Include="Methods\TestClasses\ClassWithTwoMethodsAccessingTwoFieldsAndOneMethodAccessingBothFields.cs" CopyToOutputDirectory="Always" />
+        <EmbeddedResource Include="Methods\TestClasses\ClassWithAMethodCallingAnotherMethodThatAccessAField.cs" CopyToOutputDirectory="Always" />
     </ItemGroup>
 
 </Project>

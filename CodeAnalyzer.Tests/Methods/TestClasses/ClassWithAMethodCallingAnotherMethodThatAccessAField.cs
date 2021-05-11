@@ -1,16 +1,16 @@
 ﻿namespace CodeAnalyzer.Tests.Methods.TestClasses
 {
-    public class ClassWithTwoMethodsAccessingTheSameField
+    public class ClassWithAMethodCallingAnotherMethodThatAccessAField
     {
         private readonly string _accessedField;
 
-        public ClassWithTwoMethodsAccessingTheSameField(string accessedField)
+        public ClassWithAMethodCallingAnotherMethodThatAccessAField(string accessedField)
         {
             _accessedField = accessedField;
         }
 
         public string FirstAccess() => _accessedField.ToUpper();
 
-        internal int SecondAccess() => _accessedField.Length;
+        public int SecondAccess() => FirstAccess().Length;
     }
 }

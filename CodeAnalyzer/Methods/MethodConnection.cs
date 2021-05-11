@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis;
 
 namespace CodeAnalyzer.Methods
 {
@@ -22,12 +22,12 @@ namespace CodeAnalyzer.Methods
     }
     public class MethodConnection
     {
-        internal MethodDeclarationSyntax Method1 { get; }
-        internal MethodDeclarationSyntax Method2 { get; }
+        internal ISymbol Method1 { get; }
+        internal ISymbol Method2 { get; }
         public ConnectionType Type { get; }
         public bool IsSelfConnected => Method1.Equals(Method2);
 
-        public MethodConnection(ConnectionType type, MethodDeclarationSyntax method1, MethodDeclarationSyntax method2)
+        public MethodConnection(ConnectionType type, ISymbol method1, ISymbol method2)
         {
             Method1 = method1;
             Method2 = method2;

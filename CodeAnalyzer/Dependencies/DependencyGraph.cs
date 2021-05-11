@@ -22,6 +22,8 @@ namespace CodeAnalyzer.Dependencies
         public IEnumerable<string> FindReferences(string className) =>
             _nodesByClassName.TryGetValue(className, out var node) ? node.References : Enumerable.Empty<string>();
 
+        public DependencyNode FindNode(string className) => _nodesByClassName[className];
+
         public static DependencyGraph FromClasses(IReadOnlyCollection<ClassAnalyzer> classes)
         {
             Dictionary<string, IList<string>> dependenciesByClassName = new Dictionary<string, IList<string>>();

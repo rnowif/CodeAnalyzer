@@ -57,10 +57,23 @@ namespace CodeAnalyzer.Tests.Methods
             graph.CountDirectConnections.Should().Be(2);
         }
 
-        private static MethodGraph BuildMethodGraph(string className) =>
-            SourceAnalyzer.FromFile(GetTestFile(className))
+        [Test]
+        public void Class_With_A_Methods_Calling_Another_Method_That_Access_A_Field_Has_A_Direct_Connection()
+        {
+            var graph = BuildMethodGraph(nameof(ClassWithAMethodCallingAnotherMethodThatAccessAField));
+
+            graph.CountVisible.Should().Be(2);
+            graph.CountDirectConnections.Should().Be(1);
+        }
+
+        private static MethodGraph BuildMethodGraph(string className)
+        {
+            var @class = SourceAnalyzer.FromFile(GetTestFile(className))
                 .DependencyGraph.Nodes.First(n => n.Identifier.EndsWith(className))
-                .Class.MethodGraph;
+                .Class;
+
+            return MethodGraph.FromClass(@class);
+        }
 
         private static string GetTestFile(string className) =>
             Path.Combine(TestContext.CurrentContext.TestDirectory, "Methods", "TestClasses", $"{className}.cs");

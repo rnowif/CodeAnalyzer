@@ -2,61 +2,35 @@
 using System.Linq;
 using CodeAnalyzer.Analyzer;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CodeAnalyzer.Methods
 {
     public class MethodGraph
     {
         private readonly IReadOnlyCollection<MethodConnection> _connections;
-        private readonly IReadOnlyCollection<MethodDeclarationSyntax> _methods;
+        private readonly IReadOnlyCollection<IMethodSymbol> _methods;
 
         public int CountVisible => _methods.Count;
         public int CountDirectConnections => _connections.Count(c => c.Type == MethodConnection.ConnectionType.Direct);
 
-        private MethodGraph(IEnumerable<MethodConnection> connections, IReadOnlyCollection<MethodDeclarationSyntax> methods)
+        private MethodGraph(IEnumerable<MethodConnection> connections, IEnumerable<IMethodSymbol> methods)
         {
             _connections = connections.ToList();
-            _methods = methods;
+            _methods = methods.ToList();
         }
 
         public static MethodGraph FromClass(ClassAnalyzer @class)
         {
-            // Consider all public methods (excluding constructors) and fields/properties
-
-            var connections = new List<MethodConnection>();
-            var visibleMethods = new List<MethodDeclarationSyntax>();
-
-            var variablesAccessedByMethods = new Dictionary<ISymbol, List<MethodDeclarationSyntax>>();
-
-            // Building a reverse-index of variables accessed by methods
-            var classLevelVariables = GetClassLevelVariables(@class);
-            foreach (var method in @class.Syntax.Members.OfType<MethodDeclarationSyntax>().Where(IsVisible))
-            {
-                visibleMethods.Add(method);
-
-                var accessedVariables = method.DescendantNodes().OfType<IdentifierNameSyntax>()
-                    .Select(s => @class.SemanticModel.GetSymbolInfo(s).Symbol)
-                    .Where(s => s != null && classLevelVariables.Any(s.Equals));
-
-                foreach (var variable in accessedVariables)
-                {
-                    if (!variablesAccessedByMethods.ContainsKey(variable!))
-                    {
-                        variablesAccessedByMethods[variable] = new List<MethodDeclarationSyntax>();
-                    }
-
-                    variablesAccessedByMethods[variable].Add(method);
-                }
-            }
-
             // Marking all methods that share a variable as directly connected
             // Methods A and B are directly connected if:
             // - They both access the same field/property, or
             // - The call trees starting at A and B access the same field/property.
 
+            var connections = new List<MethodConnection>();
+            var reverseIndex = ReverseVariableIndex.Build(@class);
+
             // ReSharper disable once ForeachCanBePartlyConvertedToQueryUsingAnotherGetEnumerator - Clearer this way
-            foreach (var (_, methods) in variablesAccessedByMethods)
+            foreach (var (_, methods) in reverseIndex.MethodGroups)
             {
                 var directConnections = methods
                     .SelectMany(x => methods, (x, y) => new MethodConnection(MethodConnection.ConnectionType.Direct, x, y))
@@ -65,27 +39,7 @@ namespace CodeAnalyzer.Methods
                 connections.AddRange(directConnections);
             }
 
-            return new MethodGraph(connections.Distinct(new MethodConnectionComparer()), visibleMethods);
-        }
-
-        private static IEnumerable<ISymbol> GetClassLevelVariables(ClassAnalyzer @class)
-        {
-            var fieldNodes = @class.Syntax.Members.OfType<FieldDeclarationSyntax>()
-                .SelectMany(s => s.Declaration.Variables)
-                .Cast<SyntaxNode>();
-
-            var propertyNodes = @class.Syntax.Members.OfType<PropertyDeclarationSyntax>()
-                .Cast<SyntaxNode>();
-
-            return fieldNodes.Concat(propertyNodes)
-                .Select(v => @class.SemanticModel.GetDeclaredSymbol(v))
-                .Where(s => s != null)
-                .Select(s => s!);
-        }
-
-        private static bool IsVisible(MemberDeclarationSyntax method)
-        {
-            return method.Modifiers.All(modifier => modifier.Text != "private");
+            return new MethodGraph(connections.Distinct(new MethodConnectionComparer()), reverseIndex.VisibleMethods);
         }
     }
 }

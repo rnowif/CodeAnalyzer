@@ -11,6 +11,6 @@
 
         public string FirstAccess() => AccessedProperty.ToUpper();
 
-        int SecondAccess() => AccessedProperty.Length;
+        internal int SecondAccess() => AccessedProperty.Length;
     }
 }
