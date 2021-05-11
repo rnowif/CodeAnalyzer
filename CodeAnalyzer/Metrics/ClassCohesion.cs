@@ -14,9 +14,8 @@ namespace CodeAnalyzer.Metrics
         /// NDC = number of direct connections (number of edges in the connection graph)
         /// Tight class cohesion TCC = NDC/NP
         /// </summary>
-        public static float? ComputeTightClassCohesion(this ClassAnalyzer classAnalyzer)
+        public static float? ComputeTightClassCohesion(this MethodGraph graph)
         {
-            var graph = MethodGraph.FromClass(classAnalyzer);
             var numberOfPublicMethods = graph.CountVisible;
             var numberOfPossibleConnections = numberOfPublicMethods * (numberOfPublicMethods - 1) / 2;
 
@@ -31,7 +30,7 @@ namespace CodeAnalyzer.Metrics
         /// NID = number of indirect connections
         /// TLoose class cohesion LCC = (NDC+NIC)/NP
         /// </summary>
-        public static float? ComputeLooseClassCohesion(this ClassAnalyzer classAnalyzer)
+        public static float? ComputeLooseClassCohesion(this MethodGraph graph)
         {
             return 0;
         }

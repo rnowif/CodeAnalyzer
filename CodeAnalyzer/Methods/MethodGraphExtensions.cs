@@ -23,13 +23,24 @@ namespace CodeAnalyzer.Methods
                 .Select(s => s!);
         }
 
-        public static IEnumerable<IMethodSymbol> GetCallTree(this IMethodSymbol method, IReadOnlyDictionary<IMethodSymbol, IEnumerable<IMethodSymbol>> methodsByMethods)
+        public static IEnumerable<IMethodSymbol> GetCallTree(this IMethodSymbol method, IReadOnlyDictionary<IMethodSymbol, IEnumerable<IMethodSymbol>> methodsByMethods) =>
+            method.GetCallTree(methodsByMethods, new List<IMethodSymbol>());
+
+        private static IEnumerable<IMethodSymbol> GetCallTree(this IMethodSymbol method, IReadOnlyDictionary<IMethodSymbol, IEnumerable<IMethodSymbol>> methodsByMethods, IReadOnlyCollection<IMethodSymbol> breadcrumb)
         {
+            // Early exit to handle methods recursively calling themselves
+            if (breadcrumb.Contains(method))
+            {
+                return Enumerable.Empty<IMethodSymbol>();
+            }
+
+            var updatedBreadcrumb = breadcrumb.Concat(new[] {method}).ToList();
+
             var subMethods = new List<IMethodSymbol>();
             foreach (var subMethod in methodsByMethods[method])
             {
                 subMethods.Add(subMethod);
-                subMethods.AddRange(subMethod.GetCallTree(methodsByMethods));
+                subMethods.AddRange(subMethod.GetCallTree(methodsByMethods, updatedBreadcrumb));
             }
 
             return subMethods;
