@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using CodeAnalyzer.Dependencies;
 
 namespace CodeAnalyzer.Metrics
@@ -11,9 +12,10 @@ namespace CodeAnalyzer.Metrics
         /// Could do the same for indirect dependencies
         /// There is a relationship between the CBO and the number of defects in a codebase.
         /// </summary>
-        public static float ComputeCouplingBetweenObjects(this DependencyGraph dependencyGraph)
+        public static float ComputeCouplingBetweenObjects(this DependencyGraph dependencyGraph, Predicate<DependencyNode> selectNodes)
         {
             var numberOfDependencies = dependencyGraph.Nodes
+                .Where(node => selectNodes(node))
                 .Sum(node => node.Dependencies.Count() + node.References.Count());
 
             return numberOfDependencies / (float) dependencyGraph.Count;
