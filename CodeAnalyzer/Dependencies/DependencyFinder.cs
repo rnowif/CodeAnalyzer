@@ -8,54 +8,79 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace CodeAnalyzer.Dependencies
 {
-    public static class DependencyFinder
+    public class DependencyFinder : CSharpSyntaxRewriter
     {
-        public static IEnumerable<string> FindDependencies(this ClassAnalyzer classAnalyzer)
+        private readonly List<ITypeSymbol> _dependencies = new List<ITypeSymbol>();
+
+        private readonly SemanticModel _semanticModel;
+        private readonly ClassDeclarationSyntax _syntax;
+
+        public DependencyFinder(ClassAnalyzer @class)
         {
-            var dependentTypes = new List<ITypeSymbol>();
-            var classDeclarationSyntax = classAnalyzer.Syntax;
-            var semanticModel = classAnalyzer.SemanticModel;
-
-            dependentTypes.AddRange(FindDependenciesInConstructors(classDeclarationSyntax, semanticModel));
-            dependentTypes.AddRange(FindDependenciesInMethods(classDeclarationSyntax, semanticModel));
-            dependentTypes.AddRange(FindDependenciesInFields(classDeclarationSyntax, semanticModel));
-            dependentTypes.AddRange(FindDependenciesInProperties(classDeclarationSyntax, semanticModel));
-            dependentTypes.AddRange(FindDependenciesInBody(classDeclarationSyntax, semanticModel));
-            dependentTypes.AddRange(FindDependenciesInBaseClasses(classDeclarationSyntax, semanticModel));
-
-            return dependentTypes.ToHashSet().Select(t => t.ToString() ?? "");
+            _semanticModel = @class.SemanticModel;
+            _syntax = @class.Syntax;
         }
 
-        private static IEnumerable<ITypeSymbol> FindDependenciesInConstructors(TypeDeclarationSyntax classDeclarationSyntax, SemanticModel semanticModel) =>
-            classDeclarationSyntax.Members.OfType<ConstructorDeclarationSyntax>()
-                .Select(syntax => semanticModel.GetDeclaredSymbol(syntax) ?? throw new Exception())
-                .SelectMany(symbol => symbol.FindDependencies());
+        public IEnumerable<ITypeSymbol> FindDependencies()
+        {
+            Visit(_syntax);
 
-        private static IEnumerable<ITypeSymbol> FindDependenciesInMethods(TypeDeclarationSyntax classDeclarationSyntax, SemanticModel semanticModel) =>
-            classDeclarationSyntax.Members.OfType<MethodDeclarationSyntax>()
-                .Select(syntax => semanticModel.GetDeclaredSymbol(syntax) ?? throw new Exception())
-                .SelectMany(symbol => symbol.FindDependencies());
+            return _dependencies.ToHashSet();
+        }
 
-        private static IEnumerable<ITypeSymbol> FindDependenciesInFields(TypeDeclarationSyntax classDeclarationSyntax, SemanticModel semanticModel) =>
-            classDeclarationSyntax.Members.OfType<FieldDeclarationSyntax>()
-                .SelectMany(s => s.Declaration.Variables)
-                .Select(syntax => semanticModel.GetDeclaredSymbol(syntax) as IFieldSymbol ?? throw new Exception())
-                .SelectMany(symbol => symbol.FindDependencies());
+        public override SyntaxNode? VisitConstructorDeclaration(ConstructorDeclarationSyntax node)
+        {
+            var symbol = _semanticModel.GetDeclaredSymbol(node) ?? throw new Exception();
 
-        private static IEnumerable<ITypeSymbol> FindDependenciesInProperties(TypeDeclarationSyntax classDeclarationSyntax, SemanticModel semanticModel) =>
-            classDeclarationSyntax.Members.OfType<PropertyDeclarationSyntax>()
-                .Select(syntax => semanticModel.GetDeclaredSymbol(syntax) ?? throw new Exception())
-                .SelectMany(symbol => symbol.FindDependencies());
+            _dependencies.AddRange(symbol.FindDependencies());
 
-        private static IEnumerable<ITypeSymbol> FindDependenciesInBody(SyntaxNode classDeclarationSyntax, SemanticModel semanticModel) =>
-            classDeclarationSyntax.DescendantNodes().OfType<ObjectCreationExpressionSyntax>()
-                .Select(syntax => semanticModel.GetTypeInfo(syntax))
-                .SelectMany(symbol => symbol.FindDependencies());
+            return base.VisitConstructorDeclaration(node);
+        }
 
-        private static IEnumerable<ITypeSymbol> FindDependenciesInBaseClasses(BaseTypeDeclarationSyntax classDeclarationSyntax, SemanticModel semanticModel) =>
-            classDeclarationSyntax.BaseList?.Types
-                .Select(syntax => semanticModel.GetTypeInfo(syntax.Type))
-                .SelectMany(symbol => symbol.FindDependencies()) ?? new List<ITypeSymbol>();
+        public override SyntaxNode? VisitMethodDeclaration(MethodDeclarationSyntax node)
+        {
+            var symbol = _semanticModel.GetDeclaredSymbol(node) ?? throw new Exception();
 
+            _dependencies.AddRange(symbol.FindDependencies());
+
+            return base.VisitMethodDeclaration(node);
+        }
+
+        public override SyntaxNode? VisitFieldDeclaration(FieldDeclarationSyntax node)
+        {
+            var symbols = node.Declaration.Variables
+                .Select(syntax => _semanticModel.GetDeclaredSymbol(syntax) as IFieldSymbol ?? throw new Exception());
+
+            _dependencies.AddRange(symbols.SelectMany(symbol => symbol.FindDependencies()));
+
+            return base.VisitFieldDeclaration(node);
+        }
+
+        public override SyntaxNode? VisitPropertyDeclaration(PropertyDeclarationSyntax node)
+        {
+            var symbol = _semanticModel.GetDeclaredSymbol(node) ?? throw new Exception();
+
+            _dependencies.AddRange(symbol.FindDependencies());
+
+            return base.VisitPropertyDeclaration(node);
+        }
+
+        public override SyntaxNode? VisitObjectCreationExpression(ObjectCreationExpressionSyntax node)
+        {
+            var typeInfo = _semanticModel.GetTypeInfo(node);
+
+            _dependencies.AddRange(typeInfo.FindDependencies());
+
+            return base.VisitObjectCreationExpression(node);
+        }
+
+        public override SyntaxNode? VisitBaseList(BaseListSyntax node)
+        {
+            var typeInfos = node.Types.Select(syntax => _semanticModel.GetTypeInfo(syntax.Type));
+
+            _dependencies.AddRange(typeInfos.SelectMany(symbol => symbol.FindDependencies()));
+
+            return base.VisitBaseList(node);
+        }
     }
 }
