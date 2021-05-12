@@ -41,7 +41,7 @@ namespace CodeAnalyzer.Methods
                     .Select(s => s!);
 
                 methodsByMethods[symbol] = method.DescendantNodes().OfType<IdentifierNameSyntax>()
-                    .Select(s => @class.SemanticModel.GetSymbolInfo(s).Symbol as IMethodSymbol)
+                    .Select(s => TryGetMethodSymbol(@class, s))
                     .Where(s => s != null && classMethods.Any(s.Equals))
                     .Select(s => s!);
             }
@@ -71,6 +71,14 @@ namespace CodeAnalyzer.Methods
             return new ReverseVariableIndex(variablesReverseIndex, visibleMethods);
         }
 
-        private static bool IsVisible(IMethodSymbol method) => method.DeclaredAccessibility != Accessibility.Private && !method.IsStatic;
+        private static IMethodSymbol? TryGetMethodSymbol(ClassAnalyzer @class, SyntaxNode node)
+        {
+            var symbolInfo = @class.SemanticModel.GetSymbolInfo(node);
+
+            // The symbol might not be found for multiple reasons, so we try and find a suitable candidate
+            return (symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.OfType<IMethodSymbol>().FirstOrDefault()) as IMethodSymbol;
+        }
+
+        private static bool IsVisible(IMethodSymbol method) => method.DeclaredAccessibility != Accessibility.Private && !method.IsStatic && !method.IsOverride;
     }
 }
