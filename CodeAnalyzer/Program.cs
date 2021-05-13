@@ -41,6 +41,17 @@ namespace CodeAnalyzer
             {
                 Console.WriteLine($"\t- {offender.Identifier} has a TCC of {offender.TightClassCohesion}");
             }
+
+            var worstLccOffenders = report.ClassesReports
+                .Select(r => r.Value)
+                .OrderBy(r => r.LooseClassCohesion)
+                .Take(5);
+
+            Console.WriteLine("Top 5 worst Loose Class Cohesion (LCC) offenders");
+            foreach (var offender in worstLccOffenders)
+            {
+                Console.WriteLine($"\t- {offender.Identifier} has a LCC of {offender.LooseClassCohesion}");
+            }
         }
 
         private static bool NotATest(DependencyNode node)
