@@ -1,7 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using CodeAnalyzer.Analyzer;
 using CodeAnalyzer.Dependencies;
+using CodeAnalyzer.Export;
 using CodeAnalyzer.Metrics;
 
 namespace CodeAnalyzer
@@ -10,7 +13,7 @@ namespace CodeAnalyzer
     {
         private const string SourcesDir = @"C:\WF\LP\server";
 
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             // See: https://www.researchgate.net/publication/2540411_Thresholds_for_Object-Oriented_Measures for thresholds
             var analyzer = SourceAnalyzer.FromDirectory(SourcesDir);
@@ -52,6 +55,9 @@ namespace CodeAnalyzer
             {
                 Console.WriteLine($"\t- {offender.Identifier} has a LCC of {offender.LooseClassCohesion}");
             }
+
+            Console.WriteLine("Exporting to file...");
+            await report.ExportToCsv(Path.Combine(SourcesDir, "analysis_export.csv"));
         }
 
         private static bool NotATest(DependencyNode node)
