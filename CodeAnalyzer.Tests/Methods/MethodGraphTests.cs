@@ -13,21 +13,23 @@ namespace CodeAnalyzer.Tests.Methods
     {
 
         [Test]
-        public void Class_With_No_Public_Method_Has_No_Direct_Connection()
+        public void Class_With_No_Public_Method_Has_No_Direct_Or_Indirect_Connection()
         {
             var graph = BuildMethodGraph(nameof(ClassWithNoPublicMethod));
 
             graph.CountVisible.Should().Be(0);
             graph.CountDirectConnections.Should().Be(0);
+            graph.CountIndirectConnections.Should().Be(0);
         }
 
         [Test]
-        public void Class_With_One_Public_Method_Has_No_Direct_Connection()
+        public void Class_With_One_Public_Method_Has_No_Direct_Or_Indirect_Connection()
         {
             var graph = BuildMethodGraph(nameof(ClassWithOnePublicMethod));
 
             graph.CountVisible.Should().Be(1);
             graph.CountDirectConnections.Should().Be(0);
+            graph.CountIndirectConnections.Should().Be(0);
         }
 
         [Test]
@@ -37,6 +39,7 @@ namespace CodeAnalyzer.Tests.Methods
 
             graph.CountVisible.Should().Be(2);
             graph.CountDirectConnections.Should().Be(1);
+            graph.CountIndirectConnections.Should().Be(0);
         }
 
         [Test]
@@ -46,15 +49,17 @@ namespace CodeAnalyzer.Tests.Methods
 
             graph.CountVisible.Should().Be(2);
             graph.CountDirectConnections.Should().Be(1);
+            graph.CountIndirectConnections.Should().Be(0);
         }
 
         [Test]
-        public void Class_With_Two_Methods_Accessing_Two_Fields_And_One_Method_Accessing_Both_Fields_Has_Two_Direct_Connections()
+        public void Class_With_Two_Methods_Accessing_Two_Fields_And_One_Method_Accessing_Both_Fields_Has_Two_Direct_Connections_And_One_Indirect_Connection()
         {
             var graph = BuildMethodGraph(nameof(ClassWithTwoMethodsAccessingTwoFieldsAndOneMethodAccessingBothFields));
 
             graph.CountVisible.Should().Be(3);
             graph.CountDirectConnections.Should().Be(2);
+            graph.CountIndirectConnections.Should().Be(1);
         }
 
         [Test]
@@ -64,6 +69,7 @@ namespace CodeAnalyzer.Tests.Methods
 
             graph.CountVisible.Should().Be(2);
             graph.CountDirectConnections.Should().Be(1);
+            graph.CountIndirectConnections.Should().Be(0);
         }
 
         private static MethodGraph BuildMethodGraph(string className)

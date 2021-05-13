@@ -1,5 +1,4 @@
-﻿using CodeAnalyzer.Analyzer;
-using CodeAnalyzer.Methods;
+﻿using CodeAnalyzer.Methods;
 
 namespace CodeAnalyzer.Metrics
 {
@@ -32,7 +31,12 @@ namespace CodeAnalyzer.Metrics
         /// </summary>
         public static float? ComputeLooseClassCohesion(this MethodGraph graph)
         {
-            return 0;
+            var numberOfPublicMethods = graph.CountVisible;
+            var numberOfPossibleConnections = numberOfPublicMethods * (numberOfPublicMethods - 1) / 2;
+
+            return numberOfPossibleConnections > 0
+                ? (graph.CountIndirectConnections + graph.CountDirectConnections) / (float) numberOfPossibleConnections
+                : (float?) null;
         }
     }
 }

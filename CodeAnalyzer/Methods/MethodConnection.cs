@@ -22,12 +22,12 @@ namespace CodeAnalyzer.Methods
     }
     public class MethodConnection
     {
-        internal ISymbol Method1 { get; }
-        internal ISymbol Method2 { get; }
+        internal IMethodSymbol Method1 { get; }
+        internal IMethodSymbol Method2 { get; }
         public ConnectionType Type { get; }
         public bool IsSelfConnected => Method1.Equals(Method2);
 
-        public MethodConnection(ConnectionType type, ISymbol method1, ISymbol method2)
+        public MethodConnection(ConnectionType type, IMethodSymbol method1, IMethodSymbol method2)
         {
             Method1 = method1;
             Method2 = method2;
