@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis;
 
 namespace CodeAnalyzer.Methods
 {
-    public class MethodGraph
+    public class ClassMethodAnalyzer
     {
         private readonly IReadOnlyCollection<MethodConnection> _connections;
         private readonly IReadOnlyCollection<IMethodSymbol> _methods;
@@ -14,7 +14,7 @@ namespace CodeAnalyzer.Methods
         public int CountDirectConnections => _connections.Count(c => c.Type == MethodConnection.ConnectionType.Direct);
         public int CountIndirectConnections => _connections.Count(c => c.Type == MethodConnection.ConnectionType.Indirect);
 
-        private MethodGraph(IReadOnlyDictionary<IMethodSymbol, HashSet<IMethodSymbol>> directConnectionGraph, IEnumerable<IMethodSymbol> methods)
+        private ClassMethodAnalyzer(IReadOnlyDictionary<IMethodSymbol, HashSet<IMethodSymbol>> directConnectionGraph, IEnumerable<IMethodSymbol> methods)
         {
             _methods = methods.ToList();
             _connections = BuildConnections(directConnectionGraph);
@@ -50,7 +50,7 @@ namespace CodeAnalyzer.Methods
                 .Where(connection => !connection.IsSelfConnected);
         }
 
-        public static MethodGraph FromClass(ClassAnalyzer @class)
+        public static ClassMethodAnalyzer FromClass(ClassAnalyzer @class)
         {
             // Marking all methods that share a variable as directly connected
             // Methods A and B are directly connected if:
@@ -82,7 +82,7 @@ namespace CodeAnalyzer.Methods
                 }
             }
 
-            return new MethodGraph(directConnectionGraph, reverseIndex.VisibleMethods);
+            return new ClassMethodAnalyzer(directConnectionGraph, reverseIndex.VisibleMethods);
         }
     }
 }

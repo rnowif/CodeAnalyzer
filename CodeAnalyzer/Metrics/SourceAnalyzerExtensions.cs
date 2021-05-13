@@ -19,13 +19,13 @@ namespace CodeAnalyzer.Metrics
             {
                 Console.WriteLine($"Analyzing {node.Identifier}...");
 
-                var graph = MethodGraph.FromClass(node.Class);
+                var methodAnalyzer = ClassMethodAnalyzer.FromClass(node.Class);
 
                 classReports[node.Identifier] = new ClassAnalysisReport(
                     node.Identifier,
                     node.Dependencies.Count(),
-                    graph.ComputeTightClassCohesion(),
-                    graph.ComputeLooseClassCohesion()
+                    methodAnalyzer.ComputeTightClassCohesion(),
+                    methodAnalyzer.ComputeLooseClassCohesion()
                 );
             }
 
