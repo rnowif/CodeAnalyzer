@@ -2,10 +2,10 @@
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using CodeAnalyzer.Analyzer;
-using CodeAnalyzer.Dependencies;
-using CodeAnalyzer.Export;
-using CodeAnalyzer.Metrics;
+using CodeAnalyzer.Analysis;
+using CodeAnalyzer.Analysis.Coupling;
+using CodeAnalyzer.Report;
+using CodeAnalyzer.Report.Export;
 
 namespace CodeAnalyzer
 {

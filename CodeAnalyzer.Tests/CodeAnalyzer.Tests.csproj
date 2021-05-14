@@ -7,27 +7,27 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="nunit" Version="3.12.0" />
-        <PackageReference Include="NUnit3TestAdapter" Version="3.15.1" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
-        <PackageReference Include="FluentAssertions" Version="5.10.3" />
+        <PackageReference Include="nunit" Version="3.12.0"/>
+        <PackageReference Include="NUnit3TestAdapter" Version="3.15.1"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0"/>
+        <PackageReference Include="FluentAssertions" Version="5.10.3"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\CodeAnalyzer\CodeAnalyzer.csproj" />
+        <ProjectReference Include="..\CodeAnalyzer\CodeAnalyzer.csproj"/>
     </ItemGroup>
-    
+
     <ItemGroup>
-        <EmbeddedResource Include="Dependencies\TestClasses\EmptyClass.cs" CopyToOutputDirectory="Always" />
-        <EmbeddedResource Include="Dependencies\TestClasses\ClassWithOnlySystemDependencies.cs" CopyToOutputDirectory="Always" />
-        <EmbeddedResource Include="Dependencies\TestClasses\AClassWithSeveralInternalDependencies.cs" CopyToOutputDirectory="Always" />
-        <EmbeddedResource Include="Dependencies\TestClasses\ClassWithDependencyThroughInheritance.cs" CopyToOutputDirectory="Always" />
-        <EmbeddedResource Include="Methods\TestClasses\ClassWithNoPublicMethod.cs" CopyToOutputDirectory="Always" />
-        <EmbeddedResource Include="Methods\TestClasses\ClassWithOnePublicMethod.cs" CopyToOutputDirectory="Always" />
-        <EmbeddedResource Include="Methods\TestClasses\ClassWithTwoMethodsAccessingTheSameField.cs" CopyToOutputDirectory="Always" />
-        <EmbeddedResource Include="Methods\TestClasses\ClassWithTwoMethodsAccessingTheSameProperty.cs" CopyToOutputDirectory="Always" />
-        <EmbeddedResource Include="Methods\TestClasses\ClassWithTwoMethodsAccessingTwoFieldsAndOneMethodAccessingBothFields.cs" CopyToOutputDirectory="Always" />
-        <EmbeddedResource Include="Methods\TestClasses\ClassWithAMethodCallingAnotherMethodThatAccessAField.cs" CopyToOutputDirectory="Always" />
+        <EmbeddedResource Include="Analysis\Cohesion\TestClasses\ClassWithAMethodCallingAnotherMethodThatAccessAField.cs" CopyToOutputDirectory="Always"/>
+        <EmbeddedResource Include="Analysis\Cohesion\TestClasses\ClassWithNoPublicMethod.cs" CopyToOutputDirectory="Always"/>
+        <EmbeddedResource Include="Analysis\Cohesion\TestClasses\ClassWithOnePublicMethod.cs" CopyToOutputDirectory="Always"/>
+        <EmbeddedResource Include="Analysis\Cohesion\TestClasses\ClassWithTwoMethodsAccessingTheSameField.cs" CopyToOutputDirectory="Always"/>
+        <EmbeddedResource Include="Analysis\Cohesion\TestClasses\ClassWithTwoMethodsAccessingTheSameProperty.cs" CopyToOutputDirectory="Always"/>
+        <EmbeddedResource Include="Analysis\Cohesion\TestClasses\ClassWithTwoMethodsAccessingTwoFieldsAndOneMethodAccessingBothFields.cs" CopyToOutputDirectory="Always"/>
+        <EmbeddedResource Include="Analysis\Coupling\TestClasses\AClassWithSeveralInternalDependencies.cs" CopyToOutputDirectory="Always"/>
+        <EmbeddedResource Include="Analysis\Coupling\TestClasses\ClassWithDependencyThroughInheritance.cs" CopyToOutputDirectory="Always"/>
+        <EmbeddedResource Include="Analysis\Coupling\TestClasses\ClassWithOnlySystemDependencies.cs" CopyToOutputDirectory="Always"/>
+        <EmbeddedResource Include="Analysis\Coupling\TestClasses\EmptyClass.cs" CopyToOutputDirectory="Always"/>
     </ItemGroup>
 
 </Project>
