@@ -9,26 +9,32 @@ namespace CodeAnalyzer.Methods
         private readonly Dictionary<IMethodSymbol, HashSet<IMethodSymbol>> _internalGraph = new Dictionary<IMethodSymbol, HashSet<IMethodSymbol>>();
         public IEnumerable<MethodGraphNode> Nodes => _internalGraph.Select(p => new MethodGraphNode(p.Key, p.Value));
 
-        public void AddConnections(IMethodSymbol sourceNode, IEnumerable<IMethodSymbol> targetNodes)
+        public void AddChildren(IMethodSymbol node, IEnumerable<IMethodSymbol> children)
         {
-            if (!_internalGraph.ContainsKey(sourceNode))
+            if (!_internalGraph.ContainsKey(node))
             {
-                _internalGraph[sourceNode] = new HashSet<IMethodSymbol>();
+                _internalGraph[node] = new HashSet<IMethodSymbol>();
             }
 
             // A method cannot be connected to itself
-            foreach (var m in targetNodes.Where(m => !m.Equals(sourceNode, SymbolEqualityComparer.Default)))
+            foreach (var m in children.Where(m => !m.Equals(node, SymbolEqualityComparer.Default)))
             {
-                _internalGraph[sourceNode].Add(m);
+                _internalGraph[node].Add(m);
             }
         }
 
+        /// <summary>
+        /// Returns whether a method is a direct child of another method (or the other way around)
+        /// </summary>
+        /// <param name="method1"></param>
+        /// <param name="method2"></param>
+        /// <returns>True if method1 is a directly child of method2 or vice-versa</returns>
         public bool AreConnected(IMethodSymbol method1, IMethodSymbol method2) =>
             _internalGraph[method1].Contains(method2) || _internalGraph[method2].Contains(method1);
 
-        public IEnumerable<IMethodSymbol> GetCallTree(IMethodSymbol method) => GetCallTree(method, new List<IMethodSymbol>());
+        public IEnumerable<IMethodSymbol> GetRecursiveChildren(IMethodSymbol method) => GetRecursiveChildren(method, new List<IMethodSymbol>());
 
-        private IEnumerable<IMethodSymbol> GetCallTree(IMethodSymbol method, IReadOnlyCollection<IMethodSymbol> breadcrumb)
+        private IEnumerable<IMethodSymbol> GetRecursiveChildren(IMethodSymbol method, IReadOnlyCollection<IMethodSymbol> breadcrumb)
         {
             // Early exit to handle methods recursively calling themselves
             if (breadcrumb.Contains(method))
@@ -42,7 +48,7 @@ namespace CodeAnalyzer.Methods
             foreach (var subMethod in _internalGraph[method])
             {
                 subMethods.Add(subMethod);
-                subMethods.AddRange(GetCallTree(subMethod, updatedBreadcrumb));
+                subMethods.AddRange(GetRecursiveChildren(subMethod, updatedBreadcrumb));
             }
 
             return subMethods;

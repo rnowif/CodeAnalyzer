@@ -29,7 +29,7 @@ namespace CodeAnalyzer.Methods
 
             var classMethods = new List<IMethodSymbol>();
             var variablesByMethods = new Dictionary<IMethodSymbol, IEnumerable<ISymbol>>();
-            var methodsByMethods = new MethodGraph();
+            var methodCallGraph = new MethodGraph();
             foreach (var method in @class.Syntax.Members.OfType<MethodDeclarationSyntax>())
             {
                 var symbol = @class.SemanticModel.GetDeclaredSymbol(method) as IMethodSymbol;
@@ -45,7 +45,7 @@ namespace CodeAnalyzer.Methods
                     .Where(s => s != null && classMethods.Any(s.Equals))
                     .Select(s => s!);
 
-                methodsByMethods.AddConnections(symbol, methodsCalled);
+                methodCallGraph.AddChildren(symbol, methodsCalled);
             }
 
             var visibleMethods = new List<IMethodSymbol>();
@@ -54,7 +54,7 @@ namespace CodeAnalyzer.Methods
                 visibleMethods.Add(method);
                 var methodVariables = variablesByMethods[method].ToList();
 
-                foreach (var subMethod in methodsByMethods.GetCallTree(method))
+                foreach (var subMethod in methodCallGraph.GetRecursiveChildren(method))
                 {
                     methodVariables.AddRange(variablesByMethods[subMethod]);
                 }
