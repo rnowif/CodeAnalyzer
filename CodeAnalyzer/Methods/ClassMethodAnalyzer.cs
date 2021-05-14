@@ -14,27 +14,26 @@ namespace CodeAnalyzer.Methods
         public int CountDirectConnections => _connections.Count(c => c.Type == MethodConnection.ConnectionType.Direct);
         public int CountIndirectConnections => _connections.Count(c => c.Type == MethodConnection.ConnectionType.Indirect);
 
-        private ClassMethodAnalyzer(IReadOnlyDictionary<IMethodSymbol, HashSet<IMethodSymbol>> directConnectionGraph, IEnumerable<IMethodSymbol> methods)
+        private ClassMethodAnalyzer(MethodGraph directConnectionGraph, IEnumerable<IMethodSymbol> methods)
         {
             _methods = methods.ToList();
             _connections = BuildConnections(directConnectionGraph);
         }
 
-        private static IReadOnlyCollection<MethodConnection> BuildConnections(IReadOnlyDictionary<IMethodSymbol, HashSet<IMethodSymbol>> directConnectionGraph)
+        private static IReadOnlyCollection<MethodConnection> BuildConnections(MethodGraph directConnectionGraph)
         {
             var connections = new List<MethodConnection>();
 
             // For each key, all the associated methods are directly connected to the key and indirectly connected to each other
-            foreach (var (method, connectedMethods) in directConnectionGraph)
+            foreach (var node in directConnectionGraph.Nodes)
             {
-                var directConnections = connectedMethods
-                    .Select(m => new MethodConnection(MethodConnection.ConnectionType.Direct, method, m));
+                var directConnections = node.TargetNodes
+                    .Select(m => new MethodConnection(MethodConnection.ConnectionType.Direct, node.SourceNode, m));
 
                 connections.AddRange(directConnections);
 
-                var indirectConnections = ConnectAllMethods(connectedMethods, MethodConnection.ConnectionType.Indirect)
-                    .Where(c => !directConnectionGraph[c.Method1].Contains(c.Method2))
-                    .Where(c => !directConnectionGraph[c.Method2].Contains(c.Method1));
+                var indirectConnections = ConnectAllMethods(node.TargetNodes.ToList(), MethodConnection.ConnectionType.Indirect)
+                    .Where(c => !directConnectionGraph.AreConnected(c.Method1, c.Method2));
 
                 connections.AddRange(indirectConnections);
             }
@@ -61,7 +60,8 @@ namespace CodeAnalyzer.Methods
             // - They share a direct connection but are not directly connected themselves
 
             var reverseIndex = ReverseVariableIndex.Build(@class);
-            var directConnectionGraph = new Dictionary<IMethodSymbol, HashSet<IMethodSymbol>>();
+
+            var directConnectionGraph = new MethodGraph();
 
             // All methods accessing the same variables are directly connected to each other
             foreach (var (_, methods) in reverseIndex.MethodGroups)
@@ -69,16 +69,7 @@ namespace CodeAnalyzer.Methods
                 // We do a cartesian product to mark all these methods are directly connected to each other
                 foreach (var method in methods)
                 {
-                    if (!directConnectionGraph.ContainsKey(method))
-                    {
-                        directConnectionGraph[method] = new HashSet<IMethodSymbol>();
-                    }
-
-                    // A method cannot be connected to itself
-                    foreach (var m in methods.Where(m => m != method))
-                    {
-                        directConnectionGraph[method].Add(m);
-                    }
+                    directConnectionGraph.AddConnections(method, methods);
                 }
             }
 

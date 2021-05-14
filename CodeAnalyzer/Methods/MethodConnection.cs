@@ -25,7 +25,7 @@ namespace CodeAnalyzer.Methods
         internal IMethodSymbol Method1 { get; }
         internal IMethodSymbol Method2 { get; }
         public ConnectionType Type { get; }
-        public bool IsSelfConnected => Method1.Equals(Method2);
+        public bool IsSelfConnected => Method1.Equals(Method2, SymbolEqualityComparer.Default);
 
         public MethodConnection(ConnectionType type, IMethodSymbol method1, IMethodSymbol method2)
         {
@@ -55,7 +55,8 @@ namespace CodeAnalyzer.Methods
             if (ReferenceEquals(y, null)) return false;
             if (x.GetType() != y.GetType()) return false;
             return x.Type == y.Type
-                   && (x.Method1.Equals(y.Method1) && x.Method2.Equals(y.Method2) || x.Method2.Equals(y.Method1) && x.Method1.Equals(y.Method2));
+                   && (x.Method1.Equals(y.Method1, SymbolEqualityComparer.Default) && x.Method2.Equals(y.Method2, SymbolEqualityComparer.Default)
+                       || x.Method2.Equals(y.Method1, SymbolEqualityComparer.Default) && x.Method1.Equals(y.Method2, SymbolEqualityComparer.Default));
         }
 
         public static bool operator ==(MethodConnection? left, MethodConnection? right)
