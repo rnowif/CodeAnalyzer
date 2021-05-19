@@ -18,15 +18,17 @@ namespace CodeAnalyzer.Report
     {
         public string Identifier { get; }
         public int DependencyCount { get; }
+        public int ConnectedComponentsCount { get; }
         public float TightClassCohesion { get; }
         public float LooseClassCohesion { get; }
 
-        public ClassAnalysisReport(string identifier, int dependencyCount, float? tightClassCohesion, float? looseClassCohesion)
+        public ClassAnalysisReport(string identifier, int dependencyCount, float? tightClassCohesion, float? looseClassCohesion, int connectedComponentsCount)
         {
             Identifier = identifier;
             TightClassCohesion = tightClassCohesion ?? 1;
             LooseClassCohesion = looseClassCohesion ?? 1;
             DependencyCount = dependencyCount;
+            ConnectedComponentsCount = connectedComponentsCount;
         }
     }
 }

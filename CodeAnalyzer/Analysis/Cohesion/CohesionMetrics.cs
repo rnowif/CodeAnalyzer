@@ -39,19 +39,11 @@
 
         /// <summary>
         /// LCOM4 measures the number of "connected components" in a class.
-        /// Methods a and b are related if:
-        /// - they are directly connected, or
-        ///  - a calls b, or b calls a.
         ///
         /// - LCOM4=1 indicates a cohesive class, which is the "good" class.
         /// - LCOM4>=2 indicates a problem. The class should be split into so many smaller classes.
         /// - LCOM4=0 happens when there are no methods in a class.
         /// </summary>
-        public static float? ComputeLackOfCohesionOfMethod(this ClassCohesionAnalyzer analyzer)
-        {
-            // TODO: Get the class index's call graph to check whether methods are calling each other and the directConnectionGraph to check whether they are connected
-
-            return null;
-        }
+        public static int ComputeLackOfCohesionOfMethod(this ClassCohesionAnalyzer analyzer) => analyzer.GetMethodGroups();
     }
 }

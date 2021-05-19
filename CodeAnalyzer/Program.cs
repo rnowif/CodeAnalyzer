@@ -56,8 +56,19 @@ namespace CodeAnalyzer
                 Console.WriteLine($"\t- {offender.Identifier} has a LCC of {offender.LooseClassCohesion}");
             }
 
-            Console.WriteLine("Exporting to file...");
-            await report.ExportToCsv(Path.Combine(SourcesDir, "analysis_export.csv"));
+            var worstLCom4Offenders = report.ClassesReports
+                .Select(r => r.Value)
+                .OrderByDescending(r => r.ConnectedComponentsCount)
+                .Take(5);
+
+            Console.WriteLine("Top 5 worst Lack of Cohesion of Methods (LCOM4) offenders");
+            foreach (var offender in worstLCom4Offenders)
+            {
+                Console.WriteLine($"\t- {offender.Identifier} has a LCOM4 of {offender.ConnectedComponentsCount}");
+            }
+
+            // Console.WriteLine("Exporting to file...");
+            // await report.ExportToCsv(Path.Combine(SourcesDir, "analysis_export.csv"));
         }
 
         private static bool NotATest(DependencyNode node)

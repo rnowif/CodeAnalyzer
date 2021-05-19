@@ -8,6 +8,7 @@ namespace CodeAnalyzer.Analysis.Cohesion
     {
         private readonly ClassIndex _classIndex;
         private readonly IReadOnlyCollection<MethodConnection> _connections;
+        private readonly MethodGraph _directConnectionGraph;
 
         public int CountVisible => _classIndex.VisibleMethods.Count();
         public int CountDirectConnections => _connections.Count(c => c.Type == MethodConnection.ConnectionType.Direct);
@@ -16,8 +17,7 @@ namespace CodeAnalyzer.Analysis.Cohesion
         private ClassCohesionAnalyzer(ClassIndex classIndex)
         {
             _classIndex = classIndex;
-
-            var directConnectionGraph = new MethodGraph();
+            _directConnectionGraph = new MethodGraph();
 
             // All methods accessing the same variables are directly connected to each other
             foreach (var (_, methods) in classIndex.ReverseVariableIndex)
@@ -25,11 +25,11 @@ namespace CodeAnalyzer.Analysis.Cohesion
                 // We do a cartesian product to mark all these methods are directly connected to each other
                 foreach (var method in methods)
                 {
-                    directConnectionGraph.AddChildren(method, methods);
+                    _directConnectionGraph.AddChildren(method, methods);
                 }
             }
 
-            _connections = BuildConnections(directConnectionGraph);
+            _connections = BuildConnections(_directConnectionGraph);
         }
 
         private static IReadOnlyCollection<MethodConnection> BuildConnections(MethodGraph directConnectionGraph)
@@ -59,6 +59,30 @@ namespace CodeAnalyzer.Analysis.Cohesion
             return methods
                 .SelectMany(x => methods, (x, y) => new MethodConnection(connectionType, x, y))
                 .Where(connection => !connection.IsSelfConnected);
+        }
+
+        internal int GetMethodGroups()
+        {
+            // Methods a and b are related if:
+            // - they are directly connected, or
+            //  - a calls b, or b calls a.
+
+            // Therefore, we create a "relation graph" that is the combination of the direct connection graph and the call graph
+            // to extract the connected components
+
+            var combinedGraph = new MethodGraph();
+
+            foreach (var node in _directConnectionGraph.Nodes)
+            {
+                combinedGraph.AddChildren(node.SourceNode, node.TargetNodes);
+            }
+
+            foreach (var node in _classIndex.CallGraph.Nodes)
+            {
+                combinedGraph.AddChildren(node.SourceNode, node.TargetNodes);
+            }
+
+            return combinedGraph.GetConnectedComponents().Count();
         }
 
         public static ClassCohesionAnalyzer FromClass(ClassAnalyzer @class) => new ClassCohesionAnalyzer(ClassIndex.Build(@class));

@@ -44,14 +44,62 @@ namespace CodeAnalyzer.Analysis.Cohesion
 
             var updatedBreadcrumb = breadcrumb.Concat(new[] {method}).ToList();
 
+            if (!_internalGraph.TryGetValue(method, out var children))
+            {
+                return Enumerable.Empty<IMethodSymbol>();
+            }
+
             var subMethods = new List<IMethodSymbol>();
-            foreach (var subMethod in _internalGraph[method])
+            foreach (var subMethod in children)
             {
                 subMethods.Add(subMethod);
                 subMethods.AddRange(GetRecursiveChildren(subMethod, updatedBreadcrumb));
             }
 
             return subMethods;
+        }
+
+        public IEnumerable<IEnumerable<IMethodSymbol>> GetConnectedComponents()
+        {
+            var visitedNodes = new Dictionary<IMethodSymbol, bool>();
+            var connectedComponents = new List<IEnumerable<IMethodSymbol>>();
+
+            foreach (var node in _internalGraph.Keys)
+            {
+                visitedNodes[node] = false;
+            }
+
+            foreach (var node in _internalGraph.Keys)
+            {
+                if (!visitedNodes[node])
+                {
+                    connectedComponents.Add(DepthFirstTraversal(new List<IMethodSymbol>(), node, visitedNodes));
+                }
+            }
+
+            return connectedComponents;
+        }
+
+        private IEnumerable<IMethodSymbol> DepthFirstTraversal(List<IMethodSymbol> connectedNodes, IMethodSymbol currentNode, IDictionary<IMethodSymbol, bool> visitedNodes)
+        {
+            visitedNodes[currentNode] = true;
+
+            connectedNodes.Add(currentNode);
+
+            if (!_internalGraph.TryGetValue(currentNode, out var children))
+            {
+                return connectedNodes;
+            }
+
+            foreach (var childNode in children)
+            {
+                if (!visitedNodes.TryGetValue(childNode, out var visited) || !visited)
+                {
+                    connectedNodes = DepthFirstTraversal(connectedNodes, childNode, visitedNodes).ToList();
+                }
+            }
+
+            return connectedNodes;
         }
     }
 

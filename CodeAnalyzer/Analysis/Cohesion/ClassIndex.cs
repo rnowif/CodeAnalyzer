@@ -56,7 +56,12 @@ namespace CodeAnalyzer.Analysis.Cohesion
 
                 foreach (var subMethod in methodCallGraph.GetRecursiveChildren(method))
                 {
-                    methodVariables.AddRange(variablesByMethods[subMethod]);
+                    if (!variablesByMethods.TryGetValue(subMethod, out var variables))
+                    {
+                        continue;
+                    }
+
+                    methodVariables.AddRange(variables);
                 }
 
                 foreach (var variable in methodVariables)

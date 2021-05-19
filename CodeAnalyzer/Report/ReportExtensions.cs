@@ -25,7 +25,8 @@ namespace CodeAnalyzer.Report
                     node.Identifier,
                     node.Dependencies.Count(),
                     methodAnalyzer.ComputeTightClassCohesion(),
-                    methodAnalyzer.ComputeLooseClassCohesion()
+                    methodAnalyzer.ComputeLooseClassCohesion(),
+                    methodAnalyzer.ComputeLackOfCohesionOfMethod()
                 );
             }
 

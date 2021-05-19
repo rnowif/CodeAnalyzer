@@ -1,7 +1,4 @@
-﻿using System.IO;
-using System.Linq;
-using CodeAnalyzer.Analysis;
-using CodeAnalyzer.Analysis.Cohesion;
+﻿using CodeAnalyzer.Analysis.Cohesion;
 using CodeAnalyzer.Tests.Analysis.Cohesion.TestClasses;
 using FluentAssertions;
 using NUnit.Framework;
@@ -72,16 +69,6 @@ namespace CodeAnalyzer.Tests.Analysis.Cohesion
             analyzer.CountIndirectConnections.Should().Be(0);
         }
 
-        private static ClassCohesionAnalyzer BuildMethodAnalyzer(string className)
-        {
-            var @class = SourceAnalyzer.FromFile(GetTestFile(className))
-                .DependencyGraph.Nodes.First(n => n.Identifier.EndsWith(className))
-                .Class;
-
-            return ClassCohesionAnalyzer.FromClass(@class);
-        }
-
-        private static string GetTestFile(string className) =>
-            Path.Combine(TestContext.CurrentContext.TestDirectory, "Analysis", "Cohesion", "TestClasses", $"{className}.cs");
+        private static ClassCohesionAnalyzer BuildMethodAnalyzer(string className) => ClassCohesionFixture.BuildMethodAnalyzer(className);
     }
 }
