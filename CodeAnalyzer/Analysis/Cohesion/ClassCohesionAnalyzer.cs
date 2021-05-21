@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using CodeAnalyzer.Report;
 using Microsoft.CodeAnalysis;
 
 namespace CodeAnalyzer.Analysis.Cohesion
@@ -61,7 +62,7 @@ namespace CodeAnalyzer.Analysis.Cohesion
                 .Where(connection => !connection.IsSelfConnected);
         }
 
-        internal int GetMethodGroups()
+        internal IEnumerable<IEnumerable<IMethodSymbol>> GetMethodGroups()
         {
             // Methods a and b are related if:
             // - they are directly connected, or
@@ -82,9 +83,9 @@ namespace CodeAnalyzer.Analysis.Cohesion
                 combinedGraph.AddChildren(node.SourceNode, node.TargetNodes);
             }
 
-            return combinedGraph.GetConnectedComponents().Count();
+            return combinedGraph.GetConnectedComponents();
         }
 
-        public static ClassCohesionAnalyzer FromClass(ClassAnalyzer @class) => new ClassCohesionAnalyzer(ClassIndex.Build(@class));
+        public static ClassCohesionAnalyzer FromClass(ClassAnalyzer @class, AnalysisConfiguration configuration) => new ClassCohesionAnalyzer(ClassIndex.Build(@class, configuration));
     }
 }

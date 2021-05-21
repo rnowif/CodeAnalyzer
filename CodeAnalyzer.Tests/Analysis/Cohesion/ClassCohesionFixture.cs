@@ -2,6 +2,7 @@
 using System.Linq;
 using CodeAnalyzer.Analysis;
 using CodeAnalyzer.Analysis.Cohesion;
+using CodeAnalyzer.Report;
 using NUnit.Framework;
 
 namespace CodeAnalyzer.Tests.Analysis.Cohesion
@@ -14,7 +15,7 @@ namespace CodeAnalyzer.Tests.Analysis.Cohesion
                 .DependencyGraph.Nodes.First(n => n.Identifier.EndsWith(className))
                 .Class;
 
-            return ClassCohesionAnalyzer.FromClass(@class);
+            return ClassCohesionAnalyzer.FromClass(@class, AnalysisConfiguration.Default);
         }
 
         private static string GetTestFile(string className) =>

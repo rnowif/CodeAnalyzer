@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace CodeAnalyzer.Report
 {
@@ -18,17 +19,18 @@ namespace CodeAnalyzer.Report
     {
         public string Identifier { get; }
         public int DependencyCount { get; }
-        public int ConnectedComponentsCount { get; }
+        public int LackOfCohesionOfMethods => MethodGroups.Count();
         public float TightClassCohesion { get; }
         public float LooseClassCohesion { get; }
+        public IEnumerable<IEnumerable<string>> MethodGroups { get; }
 
-        public ClassAnalysisReport(string identifier, int dependencyCount, float? tightClassCohesion, float? looseClassCohesion, int connectedComponentsCount)
+        public ClassAnalysisReport(string identifier, int dependencyCount, float? tightClassCohesion, float? looseClassCohesion, IEnumerable<IEnumerable<string>> methodGroups)
         {
             Identifier = identifier;
             TightClassCohesion = tightClassCohesion ?? 1;
             LooseClassCohesion = looseClassCohesion ?? 1;
             DependencyCount = dependencyCount;
-            ConnectedComponentsCount = connectedComponentsCount;
+            MethodGroups = methodGroups;
         }
     }
 }

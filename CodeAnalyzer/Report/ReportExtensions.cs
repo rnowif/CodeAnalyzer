@@ -9,28 +9,26 @@ namespace CodeAnalyzer.Report
 {
     public static class SourceAnalyzerExtensions
     {
-        public static AnalysisReport Analyze(this SourceAnalyzer analyzer, Predicate<DependencyNode>? selectNodes = null)
+        public static AnalysisReport Analyze(this SourceAnalyzer analyzer, AnalysisConfiguration configuration)
         {
-            Predicate<DependencyNode> predicate = selectNodes ?? (node => true);
-
             Dictionary<string, ClassAnalysisReport> classReports = new Dictionary<string, ClassAnalysisReport>();
 
-            foreach (var node in analyzer.DependencyGraph.Nodes.Where(node => predicate(node)))
+            foreach (var node in analyzer.DependencyGraph.Nodes.Where(configuration.SelectNode))
             {
                 Console.WriteLine($"Analyzing {node.Identifier}...");
 
-                var methodAnalyzer = ClassCohesionAnalyzer.FromClass(node.Class);
+                var cohesionAnalyzer = ClassCohesionAnalyzer.FromClass(node.Class, configuration);
 
                 classReports[node.Identifier] = new ClassAnalysisReport(
                     node.Identifier,
                     node.Dependencies.Count(),
-                    methodAnalyzer.ComputeTightClassCohesion(),
-                    methodAnalyzer.ComputeLooseClassCohesion(),
-                    methodAnalyzer.ComputeLackOfCohesionOfMethod()
+                    cohesionAnalyzer.ComputeTightClassCohesion(),
+                    cohesionAnalyzer.ComputeLooseClassCohesion(),
+                    cohesionAnalyzer.GetMethodGroups().Select(g => g.Select(m => m.Name))
                 );
             }
 
-            return new AnalysisReport(analyzer.DependencyGraph.ComputeCouplingBetweenObjects(predicate), classReports);
+            return new AnalysisReport(analyzer.DependencyGraph.ComputeCouplingBetweenObjects(configuration), classReports);
         }
     }
 }

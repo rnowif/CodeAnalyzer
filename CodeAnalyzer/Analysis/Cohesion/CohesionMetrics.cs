@@ -1,4 +1,6 @@
-﻿namespace CodeAnalyzer.Analysis.Cohesion
+﻿using System.Linq;
+
+namespace CodeAnalyzer.Analysis.Cohesion
 {
     public static class ClassCohesion
     {
@@ -44,6 +46,6 @@
         /// - LCOM4>=2 indicates a problem. The class should be split into so many smaller classes.
         /// - LCOM4=0 happens when there are no methods in a class.
         /// </summary>
-        public static int ComputeLackOfCohesionOfMethod(this ClassCohesionAnalyzer analyzer) => analyzer.GetMethodGroups();
+        public static int ComputeLackOfCohesionOfMethod(this ClassCohesionAnalyzer analyzer) => analyzer.GetMethodGroups().Count();
     }
 }
