@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using CodeAnalyzer.Analysis;
 using CodeAnalyzer.Analysis.Coupling;
 using CodeAnalyzer.Report;
@@ -10,26 +8,13 @@ namespace CodeAnalyzer;
 
 public abstract class Program
 {
-    private const string SourcesDir = @"C:\WF\LP\server";
-    private const string ClassToAnalyze = "nz.co.LanguagePerfect.Services.UserAccounts.Managers.UserAccountsClasses";
-
-    private static readonly IEnumerable<string> TypesToIgnore = new List<string>
-    {
-        "EP.Infrastructure.Errors.Services.IErrorEscalationService",
-        "EP.Common.Logging.ILogger",
-        "EP.Common.TimeService.ITimeService",
-        "EP.Common.FeatureFlags.Core.Interfaces.IFeatures"
-    };
-
-    public static async Task Main(string[] args)
+    public static void Main(string[] args)
     {
         // See: https://www.researchgate.net/publication/2540411_Thresholds_for_Object-Oriented_Measures for thresholds
-        var analyzer = SourceAnalyzer.FromDirectory(SourcesDir);
+        var analyzer = SourceAnalyzer.FromDirectory(args[0]);
 
         var configuration = AnalysisConfiguration.New()
             .WhereNodes(node => NotATest(node) && NotAStartupClass(node))
-            .WhereFields(field => !TypesToIgnore.Contains(field.Type.Name))
-            .WhereProperties(property => !TypesToIgnore.Contains(property.Type.Name))
             .Build();
 
         var report = analyzer.Analyze(configuration);
@@ -80,19 +65,6 @@ public abstract class Program
         {
             Console.WriteLine($"\t- {offender.Identifier} has a LCOM4 of {offender.LackOfCohesionOfMethods}");
         }
-
-        Console.WriteLine($"Method groups for {ClassToAnalyze}");
-        foreach (var methodGroup in report.ClassesReports[ClassToAnalyze].MethodGroups)
-        {
-            foreach (var method in methodGroup)
-            {
-                Console.WriteLine($"\t- {method}");
-            }
-            Console.WriteLine("\t ---------------------");
-        }
-
-        // Console.WriteLine("Exporting to file...");
-        // await report.ExportToCsv(Path.Combine(SourcesDir, "analysis_export.csv"));
     }
 
     private static bool NotATest(DependencyNode node)

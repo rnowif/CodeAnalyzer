@@ -67,8 +67,8 @@ For information, we take generic types into consideration e.g. `IEnumerable<MyCl
 
 ### Coupling Between Objects
 
-The Coupling between objects (CBO) is a global metric that is equal to the sum of all the dependencies divided by the number of classes.
-According to the litterature, there is a direct relationship between the CBO and the number of defects in a codebase.
+The Coupling between objects (CBO) is the average number of dependencies per class.
+According to the literature, there is a direct relationship between the CBO and the number of defects in a codebase.
 
 This metric is accessible via the `CouplingBetweenObjects` property of `AnalysisReport`.
 

@@ -78,13 +78,15 @@ public class ClassCohesionAnalyzer
             combinedGraph.AddChildren(node.SourceNode, node.TargetNodes);
         }
 
-        foreach (var node in _classIndex.CallGraph.Nodes)
+        foreach (var node in _classIndex.CallGraph.Nodes.Where(n => !IsStaticOrOverride(n.SourceNode)))
         {
             combinedGraph.AddChildren(node.SourceNode, node.TargetNodes);
         }
 
         return combinedGraph.GetConnectedComponents();
     }
+    
+    private static bool IsStaticOrOverride(IMethodSymbol method) => method.IsStatic || method.IsOverride || method.IsInterfaceImplementation();
 
     public static ClassCohesionAnalyzer FromClass(ClassAnalyzer @class, AnalysisConfiguration configuration) => new(ClassIndex.Build(@class, configuration));
 }
