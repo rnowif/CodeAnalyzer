@@ -5,81 +5,80 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace CodeAnalyzer.Analysis.Coupling
+namespace CodeAnalyzer.Analysis.Coupling;
+
+public class DependencyFinder : CSharpSyntaxRewriter
 {
-    public class DependencyFinder : CSharpSyntaxRewriter
+    private readonly List<ITypeSymbol> _dependencies = new();
+
+    private readonly SemanticModel _semanticModel;
+    private readonly ClassDeclarationSyntax _syntax;
+
+    public DependencyFinder(ClassAnalyzer @class)
     {
-        private readonly List<ITypeSymbol> _dependencies = new List<ITypeSymbol>();
+        _semanticModel = @class.SemanticModel;
+        _syntax = @class.Syntax;
+    }
 
-        private readonly SemanticModel _semanticModel;
-        private readonly ClassDeclarationSyntax _syntax;
+    public IEnumerable<ISymbol?> FindDependencies()
+    {
+        Visit(_syntax);
 
-        public DependencyFinder(ClassAnalyzer @class)
-        {
-            _semanticModel = @class.SemanticModel;
-            _syntax = @class.Syntax;
-        }
+        return _dependencies.ToHashSet(SymbolEqualityComparer.Default);
+    }
 
-        public IEnumerable<ITypeSymbol> FindDependencies()
-        {
-            Visit(_syntax);
+    public override SyntaxNode? VisitConstructorDeclaration(ConstructorDeclarationSyntax node)
+    {
+        var symbol = _semanticModel.GetDeclaredSymbol(node) ?? throw new Exception();
 
-            return _dependencies.ToHashSet();
-        }
+        _dependencies.AddRange(symbol.FindDependencies());
 
-        public override SyntaxNode? VisitConstructorDeclaration(ConstructorDeclarationSyntax node)
-        {
-            var symbol = _semanticModel.GetDeclaredSymbol(node) ?? throw new Exception();
+        return base.VisitConstructorDeclaration(node);
+    }
 
-            _dependencies.AddRange(symbol.FindDependencies());
+    public override SyntaxNode? VisitMethodDeclaration(MethodDeclarationSyntax node)
+    {
+        var symbol = _semanticModel.GetDeclaredSymbol(node) ?? throw new Exception();
 
-            return base.VisitConstructorDeclaration(node);
-        }
+        _dependencies.AddRange(symbol.FindDependencies());
 
-        public override SyntaxNode? VisitMethodDeclaration(MethodDeclarationSyntax node)
-        {
-            var symbol = _semanticModel.GetDeclaredSymbol(node) ?? throw new Exception();
+        return base.VisitMethodDeclaration(node);
+    }
 
-            _dependencies.AddRange(symbol.FindDependencies());
+    public override SyntaxNode? VisitFieldDeclaration(FieldDeclarationSyntax node)
+    {
+        var symbols = node.Declaration.Variables
+            .Select(syntax => _semanticModel.GetDeclaredSymbol(syntax) as IFieldSymbol ?? throw new Exception());
 
-            return base.VisitMethodDeclaration(node);
-        }
+        _dependencies.AddRange(symbols.SelectMany(symbol => symbol.FindDependencies()));
 
-        public override SyntaxNode? VisitFieldDeclaration(FieldDeclarationSyntax node)
-        {
-            var symbols = node.Declaration.Variables
-                .Select(syntax => _semanticModel.GetDeclaredSymbol(syntax) as IFieldSymbol ?? throw new Exception());
+        return base.VisitFieldDeclaration(node);
+    }
 
-            _dependencies.AddRange(symbols.SelectMany(symbol => symbol.FindDependencies()));
+    public override SyntaxNode? VisitPropertyDeclaration(PropertyDeclarationSyntax node)
+    {
+        var symbol = _semanticModel.GetDeclaredSymbol(node) ?? throw new Exception();
 
-            return base.VisitFieldDeclaration(node);
-        }
+        _dependencies.AddRange(symbol.FindDependencies());
 
-        public override SyntaxNode? VisitPropertyDeclaration(PropertyDeclarationSyntax node)
-        {
-            var symbol = _semanticModel.GetDeclaredSymbol(node) ?? throw new Exception();
+        return base.VisitPropertyDeclaration(node);
+    }
 
-            _dependencies.AddRange(symbol.FindDependencies());
+    public override SyntaxNode? VisitObjectCreationExpression(ObjectCreationExpressionSyntax node)
+    {
+        var typeInfo = _semanticModel.GetTypeInfo(node);
 
-            return base.VisitPropertyDeclaration(node);
-        }
+        _dependencies.AddRange(typeInfo.FindDependencies());
 
-        public override SyntaxNode? VisitObjectCreationExpression(ObjectCreationExpressionSyntax node)
-        {
-            var typeInfo = _semanticModel.GetTypeInfo(node);
+        return base.VisitObjectCreationExpression(node);
+    }
 
-            _dependencies.AddRange(typeInfo.FindDependencies());
+    public override SyntaxNode? VisitBaseList(BaseListSyntax node)
+    {
+        var typeInfos = node.Types.Select(syntax => _semanticModel.GetTypeInfo(syntax.Type));
 
-            return base.VisitObjectCreationExpression(node);
-        }
+        _dependencies.AddRange(typeInfos.SelectMany(symbol => symbol.FindDependencies()));
 
-        public override SyntaxNode? VisitBaseList(BaseListSyntax node)
-        {
-            var typeInfos = node.Types.Select(syntax => _semanticModel.GetTypeInfo(syntax.Type));
-
-            _dependencies.AddRange(typeInfos.SelectMany(symbol => symbol.FindDependencies()));
-
-            return base.VisitBaseList(node);
-        }
+        return base.VisitBaseList(node);
     }
 }

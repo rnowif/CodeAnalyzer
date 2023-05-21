@@ -1,7 +1,6 @@
-﻿namespace CodeAnalyzer.Tests.Analysis.Coupling.TestClasses
+﻿namespace CodeAnalyzer.Tests.Analysis.Coupling.TestClasses;
+
+public class EmptyClass
 {
-    public class EmptyClass
-    {
         
-    }
 }

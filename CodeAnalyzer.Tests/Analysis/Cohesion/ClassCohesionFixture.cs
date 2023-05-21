@@ -5,20 +5,19 @@ using CodeAnalyzer.Analysis.Cohesion;
 using CodeAnalyzer.Report;
 using NUnit.Framework;
 
-namespace CodeAnalyzer.Tests.Analysis.Cohesion
+namespace CodeAnalyzer.Tests.Analysis.Cohesion;
+
+public static class ClassCohesionFixture
 {
-    public static class ClassCohesionFixture
+    public static ClassCohesionAnalyzer BuildMethodAnalyzer(string className)
     {
-        public static ClassCohesionAnalyzer BuildMethodAnalyzer(string className)
-        {
-            var @class = SourceAnalyzer.FromFile(GetTestFile(className))
-                .DependencyGraph.Nodes.First(n => n.Identifier.EndsWith(className))
-                .Class;
+        var @class = SourceAnalyzer.FromFile(GetTestFile(className))
+            .DependencyGraph.Nodes.First(n => n.Identifier.EndsWith(className))
+            .Class;
 
-            return ClassCohesionAnalyzer.FromClass(@class, AnalysisConfiguration.Default);
-        }
-
-        private static string GetTestFile(string className) =>
-            Path.Combine(TestContext.CurrentContext.TestDirectory, "Analysis", "Cohesion", "TestClasses", $"{className}.cs");
+        return ClassCohesionAnalyzer.FromClass(@class, AnalysisConfiguration.Default);
     }
+
+    private static string GetTestFile(string className) =>
+        Path.Combine(TestContext.CurrentContext.TestDirectory, "Analysis", "Cohesion", "TestClasses", $"{className}.cs");
 }

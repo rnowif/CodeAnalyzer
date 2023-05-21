@@ -1,16 +1,15 @@
-﻿namespace CodeAnalyzer.Tests.Analysis.Cohesion.TestClasses
+﻿namespace CodeAnalyzer.Tests.Analysis.Cohesion.TestClasses;
+
+public class ClassWithTwoMethodsAccessingTheSameField
 {
-    public class ClassWithTwoMethodsAccessingTheSameField
+    private readonly string _accessedField;
+
+    public ClassWithTwoMethodsAccessingTheSameField(string accessedField)
     {
-        private readonly string _accessedField;
-
-        public ClassWithTwoMethodsAccessingTheSameField(string accessedField)
-        {
-            _accessedField = accessedField;
-        }
-
-        public string FirstAccess() => _accessedField.ToUpper();
-
-        internal int SecondAccess() => _accessedField.Length;
+        _accessedField = accessedField;
     }
+
+    public string FirstAccess() => _accessedField.ToUpper();
+
+    internal int SecondAccess() => _accessedField.Length;
 }

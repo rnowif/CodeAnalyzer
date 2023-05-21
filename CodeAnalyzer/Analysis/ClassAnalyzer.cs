@@ -1,19 +1,20 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace CodeAnalyzer.Analysis
-{
-    public class ClassAnalyzer
-    {
-        public ClassDeclarationSyntax Syntax { get; }
-        public SemanticModel SemanticModel { get; }
-        public string QualifiedName { get; }
+namespace CodeAnalyzer.Analysis;
 
-        public ClassAnalyzer(ClassDeclarationSyntax syntax, string namespaceName, SemanticModel semanticModel)
-        {
-            QualifiedName = $"{namespaceName}.{syntax.Identifier}";
-            Syntax = syntax;
-            SemanticModel = semanticModel;
-        }
+public class ClassAnalyzer
+{
+    public ClassDeclarationSyntax Syntax { get; }
+    public SemanticModel SemanticModel { get; }
+    public string QualifiedName { get; }
+    public string Name { get; }
+
+    public ClassAnalyzer(ClassDeclarationSyntax syntax, string namespaceName, SemanticModel semanticModel)
+    {
+        Name = syntax.Identifier.Text;
+        QualifiedName = $"{namespaceName}.{syntax.Identifier}";
+        Syntax = syntax;
+        SemanticModel = semanticModel;
     }
 }

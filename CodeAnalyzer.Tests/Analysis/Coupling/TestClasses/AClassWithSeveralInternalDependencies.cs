@@ -1,33 +1,32 @@
 ﻿using System;
 
-namespace CodeAnalyzer.Tests.Analysis.Coupling.TestClasses
+namespace CodeAnalyzer.Tests.Analysis.Coupling.TestClasses;
+
+public class AClassWithSeveralInternalDependencies
 {
-    public class AClassWithSeveralInternalDependencies
+    private static readonly D StaticDependency = new();
+
+    private readonly Func<A, B> _genericDependencies;
+    private C FieldDependency { get; }
+
+    public AClassWithSeveralInternalDependencies(Func<A, B> genericDependencies)
     {
-        private static readonly D StaticDependency = new D();
-
-        private readonly Func<A, B> _genericDependencies;
-        private C FieldDependency { get; }
-
-        public AClassWithSeveralInternalDependencies(Func<A, B> genericDependencies)
-        {
-            _genericDependencies = genericDependencies;
-            FieldDependency = new C();
-        }
-
-        public F AMethod(E methodDependency)
-        {
-            var inMethodDependency = new G();
-
-            return new F();
-        }
+        _genericDependencies = genericDependencies;
+        FieldDependency = new C();
     }
 
-    public class A {}
-    public class B {}
-    public class C {}
-    public class D {}
-    public class E {}
-    public class F {}
-    public class G {}
+    public F AMethod(E methodDependency)
+    {
+        var inMethodDependency = new G();
+
+        return new F();
+    }
 }
+
+public class A {}
+public class B {}
+public class C {}
+public class D {}
+public class E {}
+public class F {}
+public class G {}

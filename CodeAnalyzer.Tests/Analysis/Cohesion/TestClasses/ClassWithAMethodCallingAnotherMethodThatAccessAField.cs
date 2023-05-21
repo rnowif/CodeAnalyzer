@@ -1,16 +1,15 @@
-﻿namespace CodeAnalyzer.Tests.Analysis.Cohesion.TestClasses
+﻿namespace CodeAnalyzer.Tests.Analysis.Cohesion.TestClasses;
+
+public class ClassWithAMethodCallingAnotherMethodThatAccessAField
 {
-    public class ClassWithAMethodCallingAnotherMethodThatAccessAField
+    private readonly string _accessedField;
+
+    public ClassWithAMethodCallingAnotherMethodThatAccessAField(string accessedField)
     {
-        private readonly string _accessedField;
-
-        public ClassWithAMethodCallingAnotherMethodThatAccessAField(string accessedField)
-        {
-            _accessedField = accessedField;
-        }
-
-        public string FirstAccess() => _accessedField.ToUpper();
-
-        public int SecondAccess() => FirstAccess().Length;
+        _accessedField = accessedField;
     }
+
+    public string FirstAccess() => _accessedField.ToUpper();
+
+    public int SecondAccess() => FirstAccess().Length;
 }
