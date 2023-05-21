@@ -125,7 +125,6 @@ foreach (var offender in worstLCom4Offenders)
     Console.WriteLine($"\t- {offender.Identifier} has a LCOM4 of {offender.LackOfCohesionOfMethods}");
 }
 
-// 
 foreach (var methodGroup in report.ClassesReports[ClassToAnalyze].MethodGroups)
 {
     foreach (var method in methodGroup)

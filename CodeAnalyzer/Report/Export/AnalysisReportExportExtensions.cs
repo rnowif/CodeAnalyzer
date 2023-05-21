@@ -8,7 +8,7 @@ public static class AnalysisReportExportExtensions
     public static async Task ExportToCsv(this AnalysisReport report, string filePath)
     {
         var writer = new AnalysisReportCsvFileWriter(report);
-        await using FileStream csvFile = File.Create(filePath);
+        await using var csvFile = File.Create(filePath);
         await writer.OpenStream().CopyToAsync(csvFile);
     }
 }

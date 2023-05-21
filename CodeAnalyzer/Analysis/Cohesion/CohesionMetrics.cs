@@ -4,9 +4,9 @@ namespace CodeAnalyzer.Analysis.Cohesion;
 
 public static class ClassCohesion
 {
-    // TCC < 0.5 and LCC<0.5 are considered non-cohesive classes.
-    // LCC=0.8 is considered "quite cohesive".
-    // TCC=LCC=1 is a maximally cohesive class: all methods are connected.
+    // TCC < 0.5 and LCC < 0.5 are considered non-cohesive classes.
+    // LCC = 0.8 is considered "quite cohesive".
+    // TCC = LCC = 1 is a maximally cohesive class: all methods are connected.
 
     /// <summary>
     /// NP = maximum number of possible connections = N * (N-1) / 2 where N is the number of methods
@@ -42,9 +42,9 @@ public static class ClassCohesion
     /// <summary>
     /// LCOM4 measures the number of "connected components" in a class.
     ///
-    /// - LCOM4=1 indicates a cohesive class, which is the "good" class.
-    /// - LCOM4>=2 indicates a problem. The class should be split into so many smaller classes.
-    /// - LCOM4=0 happens when there are no methods in a class.
+    /// - LCOM4 = 1 indicates a cohesive class, which is the "good" class.
+    /// - LCOM4 >= 2 indicates a problem. The class should be split into so many smaller classes.
+    /// - LCOM4 = 0 happens when there are no methods in a class.
     /// </summary>
     public static int ComputeLackOfCohesionOfMethod(this ClassCohesionAnalyzer analyzer) => analyzer.GetMethodGroups().Count();
 }

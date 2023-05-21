@@ -84,7 +84,7 @@ public abstract class Program
         Console.WriteLine($"Method groups for {ClassToAnalyze}");
         foreach (var methodGroup in report.ClassesReports[ClassToAnalyze].MethodGroups)
         {
-            foreach (string method in methodGroup)
+            foreach (var method in methodGroup)
             {
                 Console.WriteLine($"\t- {method}");
             }
