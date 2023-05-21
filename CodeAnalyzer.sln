@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeAnalyzer", "CodeAnalyzer.csproj", "{55696DE2-1AEC-41D2-90B9-A11B18C83DB6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeAnalyzer", "CodeAnalyzer\CodeAnalyzer.csproj", "{55696DE2-1AEC-41D2-90B9-A11B18C83DB6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeAnalyzer.Tests", "..\CodeAnalyzer.Tests\CodeAnalyzer.Tests.csproj", "{3CF0EE56-6A45-4758-A05E-F8152FA03E0E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeAnalyzer.Tests", "CodeAnalyzer.Tests\CodeAnalyzer.Tests.csproj", "{3CF0EE56-6A45-4758-A05E-F8152FA03E0E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
