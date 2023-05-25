@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using CodeAnalyzer.Report;
 using Microsoft.CodeAnalysis;
@@ -85,12 +86,7 @@ public class ClassIndex
     {
         var symbolInfo = @class.SemanticModel.GetSymbolInfo(node);
 
-        // If we have several candidates, it means that it's an overload and we chose the right method
-        // using the number of arguments
-        // TODO: compare argument types
-        var symbol = symbolInfo.Symbol
-                     ?? symbolInfo.CandidateSymbols.OfType<IMethodSymbol>()
-                         .FirstOrDefault(c => c.Parameters.Length == node.ArgumentList.Arguments.Count);
+        var symbol = symbolInfo.Symbol ?? FindMethodFromCandidates(node, symbolInfo.CandidateSymbols);
 
         if (symbol is not IMethodSymbol methodSymbol)
         {
@@ -98,5 +94,19 @@ public class ClassIndex
         }
 
         return methodSymbol.ContainingType.Name == @class.Name ? methodSymbol : null;
+    }
+
+    private static IMethodSymbol? FindMethodFromCandidates(InvocationExpressionSyntax node, ImmutableArray<ISymbol> candidates)
+    {
+        if (candidates.Length == 1)
+        {
+            return candidates.First() as IMethodSymbol;
+        }
+        
+        // If we have several candidates, it means that it's an overload and we chose the right method
+        // using the number of arguments
+        // TODO: compare argument types
+        return candidates.OfType<IMethodSymbol>()
+            .FirstOrDefault(c => c.Parameters.Length == node.ArgumentList.Arguments.Count);
     }
 }
