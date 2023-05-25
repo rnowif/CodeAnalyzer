@@ -29,6 +29,7 @@
         <EmbeddedResource Include="Analysis\Cohesion\TestClasses\ClassWithTwoMethodsAccessingTwoFields.cs" CopyToOutputDirectory="Always" />
         <EmbeddedResource Include="Analysis\Cohesion\TestClasses\ClassWithTwoMethodsAccessingTwoFieldsAndOneMethodAccessingBothFields.cs" CopyToOutputDirectory="Always" />
         <EmbeddedResource Include="Analysis\Cohesion\TestClasses\ClassWithTwoMethodsIncludingADanglingOne.cs" CopyToOutputDirectory="Always" />
+        <EmbeddedResource Include="Analysis\Cohesion\TestClasses\ClassWithOverloadMethods.cs" CopyToOutputDirectory="Always" />
         <EmbeddedResource Include="Analysis\Coupling\TestClasses\AClassWithSeveralInternalDependencies.cs" CopyToOutputDirectory="Always" />
         <EmbeddedResource Include="Analysis\Coupling\TestClasses\ClassWithDependencyThroughInheritance.cs" CopyToOutputDirectory="Always" />
         <EmbeddedResource Include="Analysis\Coupling\TestClasses\ClassWithOnlySystemDependencies.cs" CopyToOutputDirectory="Always" />

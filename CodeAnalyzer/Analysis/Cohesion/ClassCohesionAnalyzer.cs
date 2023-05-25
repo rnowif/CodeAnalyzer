@@ -86,7 +86,7 @@ public class ClassCohesionAnalyzer
         return combinedGraph.GetConnectedComponents();
     }
     
-    private static bool IsStaticOrOverride(IMethodSymbol method) => method.IsStatic || method.IsOverride;
+    private static bool IsStaticOrOverride(ISymbol method) => method.IsStatic || method.IsOverride;
 
     public static ClassCohesionAnalyzer FromClass(ClassAnalyzer @class, AnalysisConfiguration configuration) => new(ClassIndex.Build(@class, configuration));
 }

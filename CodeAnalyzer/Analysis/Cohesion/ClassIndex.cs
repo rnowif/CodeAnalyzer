@@ -45,7 +45,7 @@ public class ClassIndex
                 .Where(s => s != null && classLevelVariables.Any(s.Equals))
                 .Select(s => s!);
 
-            var methodsCalled = method.DescendantNodes().OfType<IdentifierNameSyntax>()
+            var methodsCalled = method.DescendantNodes().OfType<InvocationExpressionSyntax>()
                 .Select(s => TryGetMethodSymbol(@class, s))
                 .Where(s => s != null)
                 .Select(s => s!);
@@ -81,12 +81,16 @@ public class ClassIndex
         return new ClassIndex(variablesReverseIndex, methodCallGraph);
     }
 
-    private static IMethodSymbol? TryGetMethodSymbol(ClassAnalyzer @class, SyntaxNode node)
+    private static IMethodSymbol? TryGetMethodSymbol(ClassAnalyzer @class, InvocationExpressionSyntax node)
     {
         var symbolInfo = @class.SemanticModel.GetSymbolInfo(node);
 
-        // The symbol might not be found for multiple reasons, so we try and find a suitable candidate
-        var symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.OfType<IMethodSymbol>().FirstOrDefault();
+        // If we have several candidates, it means that it's an overload and we chose the right method
+        // using the number of arguments
+        // TODO: compare argument types
+        var symbol = symbolInfo.Symbol
+                     ?? symbolInfo.CandidateSymbols.OfType<IMethodSymbol>()
+                         .FirstOrDefault(c => c.Parameters.Length == node.ArgumentList.Arguments.Count);
 
         if (symbol is not IMethodSymbol methodSymbol)
         {

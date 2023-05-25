@@ -56,5 +56,13 @@ public class MethodGroupsTests
         analyzer.ComputeLackOfCohesionOfMethod().Should().Be(1);
     }
 
+    [Test]
+    public void A_Class_With_Overload_Calls_Has_1_Group()
+    {
+        var analyzer = BuildMethodAnalyzer(nameof(ClassWithOverloadMethods));
+
+        analyzer.ComputeLackOfCohesionOfMethod().Should().Be(1);
+    }
+
     private static ClassCohesionAnalyzer BuildMethodAnalyzer(string className) => ClassCohesionFixture.BuildMethodAnalyzer(className);
 }
