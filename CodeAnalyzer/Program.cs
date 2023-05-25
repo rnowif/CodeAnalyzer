@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using CodeAnalyzer.Analysis;
 using CodeAnalyzer.Analysis.Coupling;
 using CodeAnalyzer.Report;
@@ -8,10 +9,10 @@ namespace CodeAnalyzer;
 
 public abstract class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         // See: https://www.researchgate.net/publication/2540411_Thresholds_for_Object-Oriented_Measures for thresholds
-        var analyzer = SourceAnalyzer.FromDirectory(args[0]);
+        var analyzer = await SourceAnalyzer.FromSolution(args[0]);
 
         var configuration = AnalysisConfiguration.New()
             .WhereNodes(node => NotATest(node) && NotAStartupClass(node))

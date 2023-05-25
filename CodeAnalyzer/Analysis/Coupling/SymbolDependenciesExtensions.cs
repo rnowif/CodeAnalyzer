@@ -52,6 +52,6 @@ public static class SymbolDependenciesExtensions
             return false;
         }
 
-        return !namespaceSymbol.IsGlobalNamespace && !namespaceSymbol.Name.StartsWith("System");
+        return !namespaceSymbol.IsGlobalNamespace && !namespaceSymbol.ToDisplayString().StartsWith("System");
     }
 }

@@ -1,10 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using CodeAnalyzer.Analysis.Coupling;
+using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.MSBuild;
 
 namespace CodeAnalyzer.Analysis;
 
@@ -12,22 +15,19 @@ public class SourceAnalyzer
 {
     public DependencyGraph DependencyGraph { get; }
 
-    private SourceAnalyzer(IEnumerable<Compilation> compilations)
+    private SourceAnalyzer(IEnumerable<DocumentModels> documents)
     {
         var classes = new List<ClassAnalyzer>();
 
-        foreach (var compilation in compilations)
+        foreach (var document in documents)
         {
-            foreach (var syntaxTree in compilation.SyntaxTrees)
-            {
-                var root = syntaxTree.GetCompilationUnitRoot();
+            var root = document.SyntaxTree.GetCompilationUnitRoot();
 
-                foreach (var namespaceSyntax in root.Members.OfType<BaseNamespaceDeclarationSyntax>())
-                {
-                    var namespaceName = namespaceSyntax.Name.ToString();
-                    classes.AddRange(namespaceSyntax.Members.OfType<ClassDeclarationSyntax>()
-                        .Select(classSyntax => new ClassAnalyzer(classSyntax, namespaceName, compilation.GetSemanticModel(classSyntax.SyntaxTree))));
-                }
+            foreach (var namespaceSyntax in root.Members.OfType<BaseNamespaceDeclarationSyntax>())
+            {
+                var namespaceName = namespaceSyntax.Name.ToString();
+                classes.AddRange(namespaceSyntax.Members.OfType<ClassDeclarationSyntax>()
+                    .Select(classSyntax => new ClassAnalyzer(classSyntax, namespaceName, document.SemanticModel)));
             }
         }
 
@@ -52,6 +52,48 @@ public class SourceAnalyzer
             .Select(content => CSharpSyntaxTree.ParseText(content))
             .ToList();
 
-        return new SourceAnalyzer(new[] {CSharpCompilation.Create(null, syntaxTrees)});
+        var compilation = CSharpCompilation.Create(null, syntaxTrees);
+        var models = compilation.SyntaxTrees
+            .Select(syntaxTree => new DocumentModels
+            {
+                SemanticModel = compilation.GetSemanticModel(syntaxTree),
+                SyntaxTree = syntaxTree
+            });
+
+        return new SourceAnalyzer(models);
+    }
+    
+    public static async Task<SourceAnalyzer> FromSolution(string solutionFile)
+    {
+        MSBuildLocator.RegisterDefaults();
+        using var workspace = MSBuildWorkspace.Create();
+        var solution = await workspace.OpenSolutionAsync(solutionFile);
+        
+        var documents = solution.Projects.SelectMany(p => p.Documents);
+
+        var models = new List<DocumentModels>();
+        
+        foreach (var document in documents)
+        {
+            var syntaxTree = await document.GetSyntaxTreeAsync();
+            var semanticModel = await document.GetSemanticModelAsync();
+
+            if (syntaxTree != null && semanticModel != null)
+            {
+                models.Add(new DocumentModels
+                {
+                    SyntaxTree = syntaxTree,
+                    SemanticModel = semanticModel
+                });
+            }
+        }
+        
+        return new SourceAnalyzer(models);
+    }
+
+    private class DocumentModels
+    {
+        public SyntaxTree SyntaxTree { get; init; } = null!;
+        public SemanticModel SemanticModel { get; init; } = null!;
     }
 }
